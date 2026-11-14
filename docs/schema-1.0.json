@@ -1,0 +1,249 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://netprobe.example/schema/1.0",
+  "title": "NetProbe ExportDocument 1.0",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "exportMode",
+    "exportedAtUtc",
+    "snapshot",
+    "eventHistory",
+    "permissionComparison"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0"
+    },
+    "exportMode": {
+      "enum": [
+        "raw",
+        "redacted"
+      ]
+    },
+    "exportedAtUtc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "snapshot": {
+      "$ref": "#/$defs/snapshot"
+    },
+    "eventHistory": {
+      "type": "array",
+      "maxItems": 40,
+      "items": {
+        "type": "object",
+        "required": [
+          "capturedAtUtc",
+          "event"
+        ],
+        "properties": {
+          "capturedAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "event": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "permissionComparison": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "required": [
+            "experiment",
+            "before",
+            "after",
+            "changedPaths",
+            "note"
+          ],
+          "properties": {
+            "experiment": {
+              "type": "string"
+            },
+            "before": {
+              "$ref": "#/$defs/snapshot"
+            },
+            "after": {
+              "$ref": "#/$defs/snapshot"
+            },
+            "changedPaths": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "note": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "field": {
+      "type": "object",
+      "required": [
+        "path",
+        "value",
+        "status",
+        "source",
+        "permission",
+        "note",
+        "errorType",
+        "sensitive",
+        "observedStatus"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "value": {},
+        "status": {
+          "enum": [
+            "available",
+            "empty",
+            "permission_denied",
+            "redacted",
+            "unsupported_api",
+            "unsupported_feature",
+            "network_unavailable",
+            "error",
+            "not_requested"
+          ]
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "permission": {
+          "type": "string",
+          "minLength": 1
+        },
+        "note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "errorType": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sensitive": {
+          "type": "boolean"
+        },
+        "observedStatus": {
+          "enum": [
+            "available",
+            "empty",
+            "permission_denied",
+            "redacted",
+            "unsupported_api",
+            "unsupported_feature",
+            "network_unavailable",
+            "error",
+            "not_requested",
+            null
+          ]
+        },
+        "acquisitionPermissions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "snapshot": {
+      "type": "object",
+      "required": [
+        "schemaVersion",
+        "capturedAtUtc",
+        "completedAtUtc",
+        "runId",
+        "event",
+        "environment",
+        "fieldResults",
+        "warnings"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "1.0"
+        },
+        "capturedAtUtc": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "completedAtUtc": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "runId": {
+          "type": "string"
+        },
+        "event": {
+          "type": "string"
+        },
+        "environment": {
+          "$ref": "#/$defs/environment"
+        },
+        "fieldResults": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/field"
+          }
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "environment": {
+      "type": "object",
+      "required": [
+        "androidApi",
+        "targetSdk",
+        "manufacturer",
+        "model",
+        "appVersion"
+      ],
+      "properties": {
+        "androidApi": {
+          "type": "integer",
+          "minimum": 26
+        },
+        "targetSdk": {
+          "type": "integer"
+        },
+        "manufacturer": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "appVersion": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

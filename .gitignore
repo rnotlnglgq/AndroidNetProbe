@@ -1,0 +1,69 @@
+# IDE and local agent configuration
+/.idea/
+*.iml
+/.agents/
+/.codex/
+/.aws/
+/.vscode/
+
+# Android / Gradle / native build output
+.gradle/
+.kotlin/
+**/build/
+.cxx/
+.externalNativeBuild/
+/local.properties
+/captures/
+/.local-tests/
+/artifacts/
+/logs/
+*.apk
+*.aab
+*.apks
+*.idsig
+
+# Local signing keys, credentials and environment files
+.signing/
+/release-signing.properties
+*.keystore
+*.jks
+*.p12
+*.pfx
+*.pem
+*.key
+.env
+.env.*
+!.env.example
+
+# Device data and private exports (samples/ contains synthetic fixtures only)
+/exports/
+/snapshots/
+/private/
+
+# Development drafts: kept locally until rewritten for publication
+/Android_Network_Probe_Agent_Spec.md
+/BUILD_TEST_REPORT.md
+/CHANGELOG.md
+/docs/API_PERMISSION_MATRIX.md
+/docs/ARCHITECTURE.md
+/docs/DATA_SCHEMA.md
+/docs/NATIVE_JNI_RESEARCH.md
+/docs/PRIVACY.md
+/docs/TEST_MATRIX.md
+/docs/drafts/
+
+# Python caches and temporary files
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+/tmp/
+*.log
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
