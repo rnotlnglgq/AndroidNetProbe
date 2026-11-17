@@ -5,7 +5,9 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
-val releaseSigningFile = rootProject.file("release-signing.properties")
+val localSigningFile = rootProject.file("release-signing.properties")
+val releaseSigningFile = if (localSigningFile.exists()) localSigningFile
+    else rootProject.file("signing/public-signing.properties")
 val releaseSigning = Properties().apply {
     if (releaseSigningFile.exists()) releaseSigningFile.inputStream().use { load(it) }
 }

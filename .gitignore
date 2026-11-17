@@ -67,3 +67,9 @@ venv/
 *~
 .DS_Store
 Thumbs.db
+
+# Deliberately shared project signing identity
+!/signing/public-research.p12
+
+# CI distribution files
+/dist/

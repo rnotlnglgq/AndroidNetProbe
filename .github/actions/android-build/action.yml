@@ -1,0 +1,37 @@
+name: Android checks
+description: Build Android APKs and run local, host JNI, server, and native layout checks.
+runs:
+  using: composite
+  steps:
+    - name: Set up JDK 25
+      uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+      with:
+        distribution: temurin
+        java-version: '25'
+    - name: Set up Gradle and validate Wrapper
+      uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5
+      with:
+        cache-read-only: ${{ github.event_name == 'pull_request' || github.ref != 'refs/heads/main' }}
+    - name: Install Android components
+      shell: bash
+      run: |
+        python3 scripts/setup-ci-android.py
+    - name: Test release tooling
+      shell: bash
+      run: python3 -m unittest discover -s scripts/tests -v
+    - name: Build and check Android
+      shell: bash
+      run: ./gradlew assembleDebug assembleRelease testDebugUnitTest assembleDebugAndroidTest lintDebug lintRelease --console=plain
+    - name: Test host JNI
+      shell: bash
+      run: python3 scripts/test-native-host.py
+    - name: Test server
+      shell: bash
+      run: python3 -m unittest discover -s server -v
+    - name: Verify APKs and native layout
+      shell: bash
+      run: |
+        python3 scripts/release.py verify-apk --apk app/build/outputs/apk/debug/app-debug.apk --debug
+        python3 scripts/release.py verify-apk --apk app/build/outputs/apk/release/app-release.apk
+        python3 scripts/check-native-elf.py app/build/outputs/apk/debug/app-debug.apk
+        python3 scripts/check-native-elf.py app/build/outputs/apk/release/app-release.apk

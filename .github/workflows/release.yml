@@ -1,0 +1,74 @@
+name: Release
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: read
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  build:
+    name: Validate and build release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - name: Checkout tag and history
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Validate tag and version
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: python3 scripts/release.py validate-tag --tag "$RELEASE_TAG" --main-ref origin/main
+      - name: Build and test
+        uses: ./.github/actions/android-build
+      - name: Package release
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: python3 scripts/release.py package --tag "$RELEASE_TAG"
+      - name: Upload release files
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: release-${{ github.sha }}
+          retention-days: 14
+          if-no-files-found: error
+          path: |
+            dist/NetProbe-*.apk
+            dist/SHA256SUMS
+            dist/build-info.json
+  publish:
+    name: Publish GitHub Release
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Download checked release files
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: release-${{ github.sha }}
+          path: dist
+      - name: Verify checksums and publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          [[ "$RELEASE_TAG" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]
+          (cd dist && sha256sum --check SHA256SUMS)
+          apk="dist/NetProbe-${RELEASE_TAG#v}.apk"
+          test -f "$apk"
+          if gh release view "$RELEASE_TAG" --repo "$GH_REPO" > /dev/null 2>&1; then
+            echo "Release already exists: $RELEASE_TAG" >&2
+            exit 1
+          fi
+          gh release create "$RELEASE_TAG" "$apk" dist/SHA256SUMS dist/build-info.json \
+            --repo "$GH_REPO" --verify-tag --draft --generate-notes --title "NetProbe ${RELEASE_TAG#v}"
+          notes="${RUNNER_TEMP}/netprobe-release-notes.md"
+          gh release view "$RELEASE_TAG" --repo "$GH_REPO" --json body --jq .body > "$notes"
+          printf '\n%s\n' '此 APK 使用项目共享签名，修改版可使用相同签名覆盖更新；请从信任的来源获取安装包。' >> "$notes"
+          gh release edit "$RELEASE_TAG" --repo "$GH_REPO" --notes-file "$notes" --draft=false
