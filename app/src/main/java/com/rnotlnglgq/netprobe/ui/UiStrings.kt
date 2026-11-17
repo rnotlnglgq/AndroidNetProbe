@@ -4,6 +4,7 @@ package com.rnotlnglgq.netprobe.ui
 import android.content.res.Resources
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.platform.LocalConfiguration
 import com.rnotlnglgq.netprobe.model.DiagnosticCatalog
 
 sealed interface UiText {
@@ -36,5 +37,6 @@ class AndroidUiStrings(private val resources: Resources) : UiStrings {
 @Composable
 fun rememberUiStrings(): UiStrings {
     val resources = LocalResources.current
-    return remember(resources) { AndroidUiStrings(resources) }
+    val configuration = LocalConfiguration.current
+    return remember(resources,configuration) { AndroidUiStrings(resources) }
 }

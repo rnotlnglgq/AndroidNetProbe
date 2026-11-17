@@ -1,226 +1,1324 @@
 {
   "schemaVersion": "1.0",
   "exportMode": "redacted",
-  "exportedAtUtc": "2026-11-10T00:00:02Z",
+  "exportedAtUtc": "2026-11-10T00:00:00Z",
   "snapshot": {
     "schemaVersion": "1.0",
     "capturedAtUtc": "2026-11-10T00:00:00Z",
-    "completedAtUtc": "2026-11-10T00:00:01Z",
-    "runId": "documentation-example-not-device-data",
+    "completedAtUtc": "2026-11-10T00:00:00Z",
+    "runId": "synthetic-example",
     "event": "documentation_example",
     "environment": {
       "androidApi": 35,
       "targetSdk": 37,
       "manufacturer": "example",
       "model": "example",
-      "appVersion": "1.0"
+      "appVersion": "0.1.0"
     },
     "fieldResults": [
-      {
-        "path": "defaultNetwork.state",
-        "value": "available",
-        "status": "available",
-        "source": "ConnectivityManager.activeNetwork",
-        "permission": "ACCESS_NETWORK_STATE",
-        "note": null,
-        "errorType": null,
-        "sensitive": false,
-        "observedStatus": null
-      },
-      {
-        "path": "defaultNetwork.sessionNetworkId",
-        "value": "net-documentation-example",
-        "status": "available",
-        "source": "session_random_uuid",
-        "permission": "ACCESS_NETWORK_STATE",
-        "note": null,
-        "errorType": null,
-        "sensitive": false,
-        "observedStatus": null
-      },
-      {
-        "path": "defaultNetwork.transports",
-        "value": [
-          "WIFI"
-        ],
-        "status": "available",
-        "source": "NetworkCapabilities.hasTransport",
-        "permission": "ACCESS_NETWORK_STATE",
-        "note": null,
-        "errorType": null,
-        "sensitive": false,
-        "observedStatus": null
-      },
-      {
-        "path": "defaultNetwork.validated",
-        "value": true,
-        "status": "available",
-        "source": "NetworkCapabilities.hasCapability(VALIDATED)",
-        "permission": "ACCESS_NETWORK_STATE",
-        "note": null,
-        "errorType": null,
-        "sensitive": false,
-        "observedStatus": null
-      },
-      {
-        "path": "defaultNetwork.metered",
-        "value": false,
-        "status": "available",
-        "source": "NetworkCapabilities.hasCapability(NOT_METERED)",
-        "permission": "ACCESS_NETWORK_STATE",
-        "note": null,
-        "errorType": null,
-        "sensitive": false,
-        "observedStatus": null
-      },
-      {
-        "path": "defaultNetwork.vpn",
-        "value": false,
-        "status": "available",
-        "source": "NetworkCapabilities.hasTransport(VPN)",
-        "permission": "ACCESS_NETWORK_STATE",
-        "note": null,
-        "errorType": null,
-        "sensitive": false,
-        "observedStatus": null
-      },
       {
         "path": "defaultNetwork.interfaceName",
         "value": "wlan0",
         "status": "available",
         "source": "LinkProperties.getInterfaceName",
-        "permission": "ACCESS_NETWORK_STATE",
+        "permission": "none",
         "note": null,
         "errorType": null,
         "sensitive": false,
-        "observedStatus": null
+        "observedStatus": null,
+        "acquisitionPermissions": []
       },
       {
         "path": "defaultNetwork.linkAddresses",
         "value": null,
         "status": "redacted",
-        "source": "LinkProperties.getLinkAddresses / LinkAddress getters",
-        "permission": "ACCESS_NETWORK_STATE",
+        "source": "LinkProperties.getLinkAddresses",
+        "permission": "none",
         "note": null,
         "errorType": null,
         "sensitive": true,
-        "observedStatus": "available"
+        "observedStatus": "available",
+        "acquisitionPermissions": []
       },
       {
-        "path": "defaultNetwork.dnsServers",
+        "path": "subscriptions[0].displayName",
         "value": null,
         "status": "redacted",
-        "source": "LinkProperties.getDnsServers",
-        "permission": "ACCESS_NETWORK_STATE",
+        "source": "SubscriptionInfo.getDisplayName",
+        "permission": "none",
         "note": null,
         "errorType": null,
         "sensitive": true,
-        "observedStatus": "available"
+        "observedStatus": "available",
+        "acquisitionPermissions": [
+          "READ_PHONE_STATE"
+        ]
       },
       {
-        "path": "defaultNetwork.routes",
+        "path": "subscriptions[0].serviceState.registrations",
         "value": null,
         "status": "redacted",
-        "source": "LinkProperties.getRoutes / RouteInfo getters",
-        "permission": "ACCESS_NETWORK_STATE",
+        "source": "NetworkRegistrationInfo",
+        "permission": "none",
         "note": null,
         "errorType": null,
         "sensitive": true,
-        "observedStatus": "available"
+        "observedStatus": "available",
+        "acquisitionPermissions": [
+          "READ_PHONE_STATE",
+          "ACCESS_COARSE_LOCATION"
+        ]
       },
       {
-        "path": "defaultNetwork.mtu",
-        "value": 0,
+        "path": "wifi.ssid",
+        "value": null,
+        "status": "permission_denied",
+        "source": "WifiInfo.getSSID",
+        "permission": "ACCESS_FINE_LOCATION + ACCESS_WIFI_STATE",
+        "note": null,
+        "errorType": null,
+        "sensitive": true,
+        "observedStatus": "permission_denied",
+        "acquisitionPermissions": []
+      },
+      {
+        "path": "systemProperties.values.gsm.operator.numeric",
+        "value": null,
+        "status": "redacted",
+        "source": "getprop gsm.operator.numeric",
+        "permission": "none",
+        "note": null,
+        "errorType": null,
+        "sensitive": true,
+        "observedStatus": "available",
+        "acquisitionPermissions": []
+      },
+      {
+        "path": "nativeInterfaces.count",
+        "value": 1,
         "status": "available",
-        "source": "LinkProperties.getMtu",
-        "permission": "ACCESS_NETWORK_STATE",
-        "note": "0 表示未设置非默认 MTU",
+        "source": "Bionic getifaddrs / JNI",
+        "permission": "none",
+        "note": null,
         "errorType": null,
         "sensitive": false,
-        "observedStatus": null
+        "observedStatus": null,
+        "acquisitionPermissions": []
       },
       {
-        "path": "defaultNetwork.privateDns.active",
+        "path": "nativeInterfaces.capturedAtUtc",
+        "value": "2026-11-10T00:00:00Z",
+        "status": "available",
+        "source": "Bionic getifaddrs / JNI",
+        "permission": "none",
+        "note": null,
+        "errorType": null,
+        "sensitive": false,
+        "observedStatus": null,
+        "acquisitionPermissions": []
+      },
+      {
+        "path": "nativeInterfaces.completedAtUtc",
+        "value": "2026-11-10T00:00:00Z",
+        "status": "available",
+        "source": "Bionic getifaddrs / JNI",
+        "permission": "none",
+        "note": null,
+        "errorType": null,
+        "sensitive": false,
+        "observedStatus": null,
+        "acquisitionPermissions": []
+      },
+      {
+        "path": "nativeInterfaces[0].name",
+        "value": "wlan0",
+        "status": "available",
+        "source": "getifaddrs.ifa_name",
+        "permission": "none",
+        "note": null,
+        "errorType": null,
+        "sensitive": false,
+        "observedStatus": null,
+        "acquisitionPermissions": []
+      },
+      {
+        "path": "nativeInterfaces[0].flags",
+        "value": 1,
+        "status": "available",
+        "source": "getifaddrs.ifa_flags",
+        "permission": "none",
+        "note": "接口 IFF_* 标志，不是地址 IFA_F_* 标志",
+        "errorType": null,
+        "sensitive": false,
+        "observedStatus": null,
+        "acquisitionPermissions": []
+      },
+      {
+        "path": "nativeInterfaces[0].up",
+        "value": true,
+        "status": "available",
+        "source": "getifaddrs.ifa_flags & IFF_UP",
+        "permission": "none",
+        "note": null,
+        "errorType": null,
+        "sensitive": false,
+        "observedStatus": null,
+        "acquisitionPermissions": []
+      },
+      {
+        "path": "nativeInterfaces[0].loopback",
         "value": false,
         "status": "available",
-        "source": "LinkProperties.isPrivateDnsActive",
-        "permission": "ACCESS_NETWORK_STATE",
-        "note": null,
-        "errorType": null,
-        "sensitive": false,
-        "observedStatus": null
-      },
-      {
-        "path": "defaultNetwork.privateDns.serverName",
-        "value": null,
-        "status": "empty",
-        "source": "LinkProperties.getPrivateDnsServerName",
-        "permission": "ACCESS_NETWORK_STATE",
-        "note": null,
-        "errorType": null,
-        "sensitive": true,
-        "observedStatus": "empty"
-      },
-      {
-        "path": "defaultNetwork.nat64Prefix",
-        "value": null,
-        "status": "empty",
-        "source": "LinkProperties.getNat64Prefix",
-        "permission": "ACCESS_NETWORK_STATE",
-        "note": null,
-        "errorType": null,
-        "sensitive": true,
-        "observedStatus": "empty"
-      },
-      {
-        "path": "telephony.simOperatorMccMnc",
-        "value": null,
-        "status": "empty",
-        "source": "TelephonyManager.getSimOperator",
-        "permission": "none",
-        "note": "不推断无 SIM",
-        "errorType": null,
-        "sensitive": true,
-        "observedStatus": "empty"
-      },
-      {
-        "path": "permissions.READ_PHONE_STATE",
-        "value": "denied",
-        "status": "available",
-        "source": "Context.checkSelfPermission",
+        "source": "getifaddrs.ifa_flags & IFF_LOOPBACK",
         "permission": "none",
         "note": null,
         "errorType": null,
         "sensitive": false,
-        "observedStatus": null
+        "observedStatus": null,
+        "acquisitionPermissions": []
       },
       {
-        "path": "subscriptions.activeCount",
+        "path": "nativeInterfaces[0].addresses",
         "value": null,
-        "status": "not_requested",
-        "source": "SubscriptionManager.getActiveSubscriptionInfoList",
+        "status": "redacted",
+        "source": "getifaddrs.ifa_addr / ifa_netmask",
+        "permission": "none",
+        "note": "scopeId 是 IPv6 zone 索引；缺失或非连续掩码的 prefixLength=null。未读取 MAC、MTU 或地址 flags/lifetime。",
+        "errorType": null,
+        "sensitive": true,
+        "observedStatus": "available",
+        "acquisitionPermissions": []
+      },
+      {
+        "path": "subscriptionHistory.count",
+        "value": null,
+        "status": "redacted",
+        "source": "SubscriptionManager.getAllSubscriptionInfoList",
         "permission": "READ_PHONE_STATE",
         "note": null,
         "errorType": null,
-        "sensitive": false,
-        "observedStatus": null
+        "sensitive": true,
+        "observedStatus": "available",
+        "acquisitionPermissions": []
       },
       {
-        "path": "externalChecks.state",
+        "path": "subscriptionHistory[0].sessionSubscriptionId",
         "value": null,
-        "status": "not_requested",
-        "source": "PublicEndpointProbe",
-        "permission": "INTERNET",
+        "status": "redacted",
+        "source": "session_random_uuid",
+        "permission": "none",
+        "note": null,
+        "errorType": null,
+        "sensitive": true,
+        "observedStatus": "available",
+        "acquisitionPermissions": [
+          "READ_PHONE_STATE"
+        ]
+      },
+      {
+        "path": "subscriptionHistory[0].slotIndex",
+        "value": null,
+        "status": "empty",
+        "source": "SubscriptionInfo.getSimSlotIndex",
+        "permission": "none",
+        "note": null,
+        "errorType": null,
+        "sensitive": true,
+        "observedStatus": "empty",
+        "acquisitionPermissions": [
+          "READ_PHONE_STATE"
+        ]
+      },
+      {
+        "path": "subscriptionHistory[0].displayName",
+        "value": null,
+        "status": "redacted",
+        "source": "SubscriptionInfo.getDisplayName",
+        "permission": "none",
+        "note": "名称可由用户修改，也可能保留系统默认值",
+        "errorType": null,
+        "sensitive": true,
+        "observedStatus": "available",
+        "acquisitionPermissions": [
+          "READ_PHONE_STATE"
+        ]
+      },
+      {
+        "path": "subscriptionHistory[0].carrierName",
+        "value": null,
+        "status": "empty",
+        "source": "SubscriptionInfo.getCarrierName",
+        "permission": "none",
+        "note": null,
+        "errorType": null,
+        "sensitive": true,
+        "observedStatus": "empty",
+        "acquisitionPermissions": [
+          "READ_PHONE_STATE"
+        ]
+      },
+      {
+        "path": "subscriptionHistory[0].countryIso",
+        "value": null,
+        "status": "empty",
+        "source": "SubscriptionInfo.getCountryIso",
+        "permission": "none",
+        "note": null,
+        "errorType": null,
+        "sensitive": true,
+        "observedStatus": "empty",
+        "acquisitionPermissions": [
+          "READ_PHONE_STATE"
+        ]
+      },
+      {
+        "path": "subscriptionHistory[0].embedded",
+        "value": null,
+        "status": "empty",
+        "source": "SubscriptionInfo.isEmbedded",
+        "permission": "none",
+        "note": null,
+        "errorType": null,
+        "sensitive": true,
+        "observedStatus": "empty",
+        "acquisitionPermissions": [
+          "READ_PHONE_STATE"
+        ]
+      },
+      {
+        "path": "subscriptionHistory[0].mcc",
+        "value": null,
+        "status": "empty",
+        "source": "SubscriptionInfo.getMccString",
+        "permission": "none",
+        "note": null,
+        "errorType": null,
+        "sensitive": true,
+        "observedStatus": "empty",
+        "acquisitionPermissions": [
+          "READ_PHONE_STATE"
+        ]
+      },
+      {
+        "path": "subscriptionHistory[0].mnc",
+        "value": null,
+        "status": "empty",
+        "source": "SubscriptionInfo.getMncString",
+        "permission": "none",
+        "note": null,
+        "errorType": null,
+        "sensitive": true,
+        "observedStatus": "empty",
+        "acquisitionPermissions": [
+          "READ_PHONE_STATE"
+        ]
+      },
+      {
+        "path": "subscriptionHistory[0].carrierId",
+        "value": null,
+        "status": "empty",
+        "source": "SubscriptionInfo.getCarrierId",
+        "permission": "none",
+        "note": null,
+        "errorType": null,
+        "sensitive": true,
+        "observedStatus": "empty",
+        "acquisitionPermissions": [
+          "READ_PHONE_STATE"
+        ]
+      },
+      {
+        "path": "subscriptionHistory[0].dataRoaming",
+        "value": null,
+        "status": "empty",
+        "source": "SubscriptionInfo.getDataRoaming",
+        "permission": "none",
+        "note": null,
+        "errorType": null,
+        "sensitive": true,
+        "observedStatus": "empty",
+        "acquisitionPermissions": [
+          "READ_PHONE_STATE"
+        ]
+      },
+      {
+        "path": "subscriptionHistory[0].opportunistic",
+        "value": null,
+        "status": "empty",
+        "source": "SubscriptionInfo.isOpportunistic",
+        "permission": "none",
+        "note": null,
+        "errorType": null,
+        "sensitive": true,
+        "observedStatus": "empty",
+        "acquisitionPermissions": [
+          "READ_PHONE_STATE"
+        ]
+      },
+      {
+        "path": "subscriptionHistory[0].subscriptionType",
+        "value": null,
+        "status": "empty",
+        "source": "SubscriptionInfo.getSubscriptionType",
+        "permission": "none",
+        "note": null,
+        "errorType": null,
+        "sensitive": true,
+        "observedStatus": "empty",
+        "acquisitionPermissions": [
+          "READ_PHONE_STATE"
+        ]
+      },
+      {
+        "path": "subscriptionHistory[0].portIndex",
+        "value": null,
+        "status": "empty",
+        "source": "SubscriptionInfo.getPortIndex",
+        "permission": "none",
+        "note": null,
+        "errorType": null,
+        "sensitive": true,
+        "observedStatus": "empty",
+        "acquisitionPermissions": [
+          "READ_PHONE_STATE"
+        ]
+      },
+      {
+        "path": "subscriptionHistory[0].usageSetting",
+        "value": null,
+        "status": "empty",
+        "source": "SubscriptionInfo.getUsageSetting",
+        "permission": "none",
+        "note": null,
+        "errorType": null,
+        "sensitive": true,
+        "observedStatus": "empty",
+        "acquisitionPermissions": [
+          "READ_PHONE_STATE"
+        ]
+      },
+      {
+        "path": "subscriptionHistory[0].onlyNonTerrestrial",
+        "value": null,
+        "status": "empty",
+        "source": "SubscriptionInfo.isOnlyNonTerrestrialNetwork",
+        "permission": "none",
+        "note": null,
+        "errorType": null,
+        "sensitive": true,
+        "observedStatus": "empty",
+        "acquisitionPermissions": [
+          "READ_PHONE_STATE"
+        ]
+      },
+      {
+        "path": "subscriptionHistory.capturedAtUtc",
+        "value": "2026-11-10T00:00:00Z",
+        "status": "available",
+        "source": "SubscriptionManager.getAllSubscriptionInfoList",
+        "permission": "none",
         "note": null,
         "errorType": null,
         "sensitive": false,
-        "observedStatus": null
+        "observedStatus": null,
+        "acquisitionPermissions": []
+      },
+      {
+        "path": "subscriptionHistory.completedAtUtc",
+        "value": "2026-11-10T00:00:00Z",
+        "status": "available",
+        "source": "SubscriptionManager.getAllSubscriptionInfoList",
+        "permission": "none",
+        "note": null,
+        "errorType": null,
+        "sensitive": false,
+        "observedStatus": null,
+        "acquisitionPermissions": []
       }
     ],
-    "warnings": [
-      "示例为人工构造的文档数据，非真实设备快照"
-    ]
+    "warnings": []
   },
-  "eventHistory": [],
-  "permissionComparison": null
+  "eventHistory": [
+    {
+      "capturedAtUtc": "2026-11-10T00:00:00Z",
+      "event": "documentation_example"
+    }
+  ],
+  "permissionComparison": {
+    "experiment": "phone",
+    "before": {
+      "schemaVersion": "1.0",
+      "capturedAtUtc": "2026-11-10T00:00:00Z",
+      "completedAtUtc": "2026-11-10T00:00:00Z",
+      "runId": "synthetic-example",
+      "event": "documentation_example",
+      "environment": {
+        "androidApi": 35,
+        "targetSdk": 37,
+        "manufacturer": "example",
+        "model": "example",
+        "appVersion": "0.1.0"
+      },
+      "fieldResults": [
+        {
+          "path": "defaultNetwork.interfaceName",
+          "value": "wlan0",
+          "status": "available",
+          "source": "LinkProperties.getInterfaceName",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": false,
+          "observedStatus": null,
+          "acquisitionPermissions": []
+        },
+        {
+          "path": "defaultNetwork.linkAddresses",
+          "value": null,
+          "status": "redacted",
+          "source": "LinkProperties.getLinkAddresses",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "available",
+          "acquisitionPermissions": []
+        },
+        {
+          "path": "subscriptions[0].displayName",
+          "value": null,
+          "status": "redacted",
+          "source": "SubscriptionInfo.getDisplayName",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "available",
+          "acquisitionPermissions": [
+            "READ_PHONE_STATE"
+          ]
+        },
+        {
+          "path": "subscriptions[0].serviceState.registrations",
+          "value": null,
+          "status": "redacted",
+          "source": "NetworkRegistrationInfo",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "available",
+          "acquisitionPermissions": [
+            "READ_PHONE_STATE",
+            "ACCESS_COARSE_LOCATION"
+          ]
+        },
+        {
+          "path": "wifi.ssid",
+          "value": null,
+          "status": "permission_denied",
+          "source": "WifiInfo.getSSID",
+          "permission": "ACCESS_FINE_LOCATION + ACCESS_WIFI_STATE",
+          "note": null,
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "permission_denied",
+          "acquisitionPermissions": []
+        },
+        {
+          "path": "systemProperties.values.gsm.operator.numeric",
+          "value": null,
+          "status": "redacted",
+          "source": "getprop gsm.operator.numeric",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "available",
+          "acquisitionPermissions": []
+        },
+        {
+          "path": "nativeInterfaces.count",
+          "value": 1,
+          "status": "available",
+          "source": "Bionic getifaddrs / JNI",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": false,
+          "observedStatus": null,
+          "acquisitionPermissions": []
+        },
+        {
+          "path": "nativeInterfaces.capturedAtUtc",
+          "value": "2026-11-10T00:00:00Z",
+          "status": "available",
+          "source": "Bionic getifaddrs / JNI",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": false,
+          "observedStatus": null,
+          "acquisitionPermissions": []
+        },
+        {
+          "path": "nativeInterfaces.completedAtUtc",
+          "value": "2026-11-10T00:00:00Z",
+          "status": "available",
+          "source": "Bionic getifaddrs / JNI",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": false,
+          "observedStatus": null,
+          "acquisitionPermissions": []
+        },
+        {
+          "path": "nativeInterfaces[0].name",
+          "value": "wlan0",
+          "status": "available",
+          "source": "getifaddrs.ifa_name",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": false,
+          "observedStatus": null,
+          "acquisitionPermissions": []
+        },
+        {
+          "path": "nativeInterfaces[0].flags",
+          "value": 1,
+          "status": "available",
+          "source": "getifaddrs.ifa_flags",
+          "permission": "none",
+          "note": "接口 IFF_* 标志，不是地址 IFA_F_* 标志",
+          "errorType": null,
+          "sensitive": false,
+          "observedStatus": null,
+          "acquisitionPermissions": []
+        },
+        {
+          "path": "nativeInterfaces[0].up",
+          "value": true,
+          "status": "available",
+          "source": "getifaddrs.ifa_flags & IFF_UP",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": false,
+          "observedStatus": null,
+          "acquisitionPermissions": []
+        },
+        {
+          "path": "nativeInterfaces[0].loopback",
+          "value": false,
+          "status": "available",
+          "source": "getifaddrs.ifa_flags & IFF_LOOPBACK",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": false,
+          "observedStatus": null,
+          "acquisitionPermissions": []
+        },
+        {
+          "path": "nativeInterfaces[0].addresses",
+          "value": null,
+          "status": "redacted",
+          "source": "getifaddrs.ifa_addr / ifa_netmask",
+          "permission": "none",
+          "note": "scopeId 是 IPv6 zone 索引；缺失或非连续掩码的 prefixLength=null。未读取 MAC、MTU 或地址 flags/lifetime。",
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "available",
+          "acquisitionPermissions": []
+        },
+        {
+          "path": "subscriptionHistory.count",
+          "value": null,
+          "status": "redacted",
+          "source": "SubscriptionManager.getAllSubscriptionInfoList",
+          "permission": "READ_PHONE_STATE",
+          "note": null,
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "available",
+          "acquisitionPermissions": []
+        },
+        {
+          "path": "subscriptionHistory[0].sessionSubscriptionId",
+          "value": null,
+          "status": "redacted",
+          "source": "session_random_uuid",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "available",
+          "acquisitionPermissions": [
+            "READ_PHONE_STATE"
+          ]
+        },
+        {
+          "path": "subscriptionHistory[0].slotIndex",
+          "value": null,
+          "status": "empty",
+          "source": "SubscriptionInfo.getSimSlotIndex",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "empty",
+          "acquisitionPermissions": [
+            "READ_PHONE_STATE"
+          ]
+        },
+        {
+          "path": "subscriptionHistory[0].displayName",
+          "value": null,
+          "status": "redacted",
+          "source": "SubscriptionInfo.getDisplayName",
+          "permission": "none",
+          "note": "名称可由用户修改，也可能保留系统默认值",
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "available",
+          "acquisitionPermissions": [
+            "READ_PHONE_STATE"
+          ]
+        },
+        {
+          "path": "subscriptionHistory[0].carrierName",
+          "value": null,
+          "status": "empty",
+          "source": "SubscriptionInfo.getCarrierName",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "empty",
+          "acquisitionPermissions": [
+            "READ_PHONE_STATE"
+          ]
+        },
+        {
+          "path": "subscriptionHistory[0].countryIso",
+          "value": null,
+          "status": "empty",
+          "source": "SubscriptionInfo.getCountryIso",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "empty",
+          "acquisitionPermissions": [
+            "READ_PHONE_STATE"
+          ]
+        },
+        {
+          "path": "subscriptionHistory[0].embedded",
+          "value": null,
+          "status": "empty",
+          "source": "SubscriptionInfo.isEmbedded",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "empty",
+          "acquisitionPermissions": [
+            "READ_PHONE_STATE"
+          ]
+        },
+        {
+          "path": "subscriptionHistory[0].mcc",
+          "value": null,
+          "status": "empty",
+          "source": "SubscriptionInfo.getMccString",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "empty",
+          "acquisitionPermissions": [
+            "READ_PHONE_STATE"
+          ]
+        },
+        {
+          "path": "subscriptionHistory[0].mnc",
+          "value": null,
+          "status": "empty",
+          "source": "SubscriptionInfo.getMncString",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "empty",
+          "acquisitionPermissions": [
+            "READ_PHONE_STATE"
+          ]
+        },
+        {
+          "path": "subscriptionHistory[0].carrierId",
+          "value": null,
+          "status": "empty",
+          "source": "SubscriptionInfo.getCarrierId",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "empty",
+          "acquisitionPermissions": [
+            "READ_PHONE_STATE"
+          ]
+        },
+        {
+          "path": "subscriptionHistory[0].dataRoaming",
+          "value": null,
+          "status": "empty",
+          "source": "SubscriptionInfo.getDataRoaming",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "empty",
+          "acquisitionPermissions": [
+            "READ_PHONE_STATE"
+          ]
+        },
+        {
+          "path": "subscriptionHistory[0].opportunistic",
+          "value": null,
+          "status": "empty",
+          "source": "SubscriptionInfo.isOpportunistic",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "empty",
+          "acquisitionPermissions": [
+            "READ_PHONE_STATE"
+          ]
+        },
+        {
+          "path": "subscriptionHistory[0].subscriptionType",
+          "value": null,
+          "status": "empty",
+          "source": "SubscriptionInfo.getSubscriptionType",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "empty",
+          "acquisitionPermissions": [
+            "READ_PHONE_STATE"
+          ]
+        },
+        {
+          "path": "subscriptionHistory[0].portIndex",
+          "value": null,
+          "status": "empty",
+          "source": "SubscriptionInfo.getPortIndex",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "empty",
+          "acquisitionPermissions": [
+            "READ_PHONE_STATE"
+          ]
+        },
+        {
+          "path": "subscriptionHistory[0].usageSetting",
+          "value": null,
+          "status": "empty",
+          "source": "SubscriptionInfo.getUsageSetting",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "empty",
+          "acquisitionPermissions": [
+            "READ_PHONE_STATE"
+          ]
+        },
+        {
+          "path": "subscriptionHistory[0].onlyNonTerrestrial",
+          "value": null,
+          "status": "empty",
+          "source": "SubscriptionInfo.isOnlyNonTerrestrialNetwork",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "empty",
+          "acquisitionPermissions": [
+            "READ_PHONE_STATE"
+          ]
+        },
+        {
+          "path": "subscriptionHistory.capturedAtUtc",
+          "value": "2026-11-10T00:00:00Z",
+          "status": "available",
+          "source": "SubscriptionManager.getAllSubscriptionInfoList",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": false,
+          "observedStatus": null,
+          "acquisitionPermissions": []
+        },
+        {
+          "path": "subscriptionHistory.completedAtUtc",
+          "value": "2026-11-10T00:00:00Z",
+          "status": "available",
+          "source": "SubscriptionManager.getAllSubscriptionInfoList",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": false,
+          "observedStatus": null,
+          "acquisitionPermissions": []
+        }
+      ],
+      "warnings": []
+    },
+    "after": {
+      "schemaVersion": "1.0",
+      "capturedAtUtc": "2026-11-10T00:00:00Z",
+      "completedAtUtc": "2026-11-10T00:00:00Z",
+      "runId": "synthetic-example",
+      "event": "documentation_example",
+      "environment": {
+        "androidApi": 35,
+        "targetSdk": 37,
+        "manufacturer": "example",
+        "model": "example",
+        "appVersion": "0.1.0"
+      },
+      "fieldResults": [
+        {
+          "path": "defaultNetwork.interfaceName",
+          "value": "wlan0",
+          "status": "available",
+          "source": "LinkProperties.getInterfaceName",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": false,
+          "observedStatus": null,
+          "acquisitionPermissions": []
+        },
+        {
+          "path": "defaultNetwork.linkAddresses",
+          "value": null,
+          "status": "redacted",
+          "source": "LinkProperties.getLinkAddresses",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "available",
+          "acquisitionPermissions": []
+        },
+        {
+          "path": "subscriptions[0].displayName",
+          "value": null,
+          "status": "redacted",
+          "source": "SubscriptionInfo.getDisplayName",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "available",
+          "acquisitionPermissions": [
+            "READ_PHONE_STATE"
+          ]
+        },
+        {
+          "path": "subscriptions[0].serviceState.registrations",
+          "value": null,
+          "status": "redacted",
+          "source": "NetworkRegistrationInfo",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "available",
+          "acquisitionPermissions": [
+            "READ_PHONE_STATE",
+            "ACCESS_COARSE_LOCATION"
+          ]
+        },
+        {
+          "path": "wifi.ssid",
+          "value": null,
+          "status": "permission_denied",
+          "source": "WifiInfo.getSSID",
+          "permission": "ACCESS_FINE_LOCATION + ACCESS_WIFI_STATE",
+          "note": null,
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "permission_denied",
+          "acquisitionPermissions": []
+        },
+        {
+          "path": "systemProperties.values.gsm.operator.numeric",
+          "value": null,
+          "status": "redacted",
+          "source": "getprop gsm.operator.numeric",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "available",
+          "acquisitionPermissions": []
+        },
+        {
+          "path": "nativeInterfaces.count",
+          "value": 1,
+          "status": "available",
+          "source": "Bionic getifaddrs / JNI",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": false,
+          "observedStatus": null,
+          "acquisitionPermissions": []
+        },
+        {
+          "path": "nativeInterfaces.capturedAtUtc",
+          "value": "2026-11-10T00:00:00Z",
+          "status": "available",
+          "source": "Bionic getifaddrs / JNI",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": false,
+          "observedStatus": null,
+          "acquisitionPermissions": []
+        },
+        {
+          "path": "nativeInterfaces.completedAtUtc",
+          "value": "2026-11-10T00:00:00Z",
+          "status": "available",
+          "source": "Bionic getifaddrs / JNI",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": false,
+          "observedStatus": null,
+          "acquisitionPermissions": []
+        },
+        {
+          "path": "nativeInterfaces[0].name",
+          "value": "wlan0",
+          "status": "available",
+          "source": "getifaddrs.ifa_name",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": false,
+          "observedStatus": null,
+          "acquisitionPermissions": []
+        },
+        {
+          "path": "nativeInterfaces[0].flags",
+          "value": 1,
+          "status": "available",
+          "source": "getifaddrs.ifa_flags",
+          "permission": "none",
+          "note": "接口 IFF_* 标志，不是地址 IFA_F_* 标志",
+          "errorType": null,
+          "sensitive": false,
+          "observedStatus": null,
+          "acquisitionPermissions": []
+        },
+        {
+          "path": "nativeInterfaces[0].up",
+          "value": true,
+          "status": "available",
+          "source": "getifaddrs.ifa_flags & IFF_UP",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": false,
+          "observedStatus": null,
+          "acquisitionPermissions": []
+        },
+        {
+          "path": "nativeInterfaces[0].loopback",
+          "value": false,
+          "status": "available",
+          "source": "getifaddrs.ifa_flags & IFF_LOOPBACK",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": false,
+          "observedStatus": null,
+          "acquisitionPermissions": []
+        },
+        {
+          "path": "nativeInterfaces[0].addresses",
+          "value": null,
+          "status": "redacted",
+          "source": "getifaddrs.ifa_addr / ifa_netmask",
+          "permission": "none",
+          "note": "scopeId 是 IPv6 zone 索引；缺失或非连续掩码的 prefixLength=null。未读取 MAC、MTU 或地址 flags/lifetime。",
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "available",
+          "acquisitionPermissions": []
+        },
+        {
+          "path": "subscriptionHistory.count",
+          "value": null,
+          "status": "redacted",
+          "source": "SubscriptionManager.getAllSubscriptionInfoList",
+          "permission": "READ_PHONE_STATE",
+          "note": null,
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "available",
+          "acquisitionPermissions": []
+        },
+        {
+          "path": "subscriptionHistory[0].sessionSubscriptionId",
+          "value": null,
+          "status": "redacted",
+          "source": "session_random_uuid",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "available",
+          "acquisitionPermissions": [
+            "READ_PHONE_STATE"
+          ]
+        },
+        {
+          "path": "subscriptionHistory[0].slotIndex",
+          "value": null,
+          "status": "empty",
+          "source": "SubscriptionInfo.getSimSlotIndex",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "empty",
+          "acquisitionPermissions": [
+            "READ_PHONE_STATE"
+          ]
+        },
+        {
+          "path": "subscriptionHistory[0].displayName",
+          "value": null,
+          "status": "redacted",
+          "source": "SubscriptionInfo.getDisplayName",
+          "permission": "none",
+          "note": "名称可由用户修改，也可能保留系统默认值",
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "available",
+          "acquisitionPermissions": [
+            "READ_PHONE_STATE"
+          ]
+        },
+        {
+          "path": "subscriptionHistory[0].carrierName",
+          "value": null,
+          "status": "empty",
+          "source": "SubscriptionInfo.getCarrierName",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "empty",
+          "acquisitionPermissions": [
+            "READ_PHONE_STATE"
+          ]
+        },
+        {
+          "path": "subscriptionHistory[0].countryIso",
+          "value": null,
+          "status": "empty",
+          "source": "SubscriptionInfo.getCountryIso",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "empty",
+          "acquisitionPermissions": [
+            "READ_PHONE_STATE"
+          ]
+        },
+        {
+          "path": "subscriptionHistory[0].embedded",
+          "value": null,
+          "status": "empty",
+          "source": "SubscriptionInfo.isEmbedded",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "empty",
+          "acquisitionPermissions": [
+            "READ_PHONE_STATE"
+          ]
+        },
+        {
+          "path": "subscriptionHistory[0].mcc",
+          "value": null,
+          "status": "empty",
+          "source": "SubscriptionInfo.getMccString",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "empty",
+          "acquisitionPermissions": [
+            "READ_PHONE_STATE"
+          ]
+        },
+        {
+          "path": "subscriptionHistory[0].mnc",
+          "value": null,
+          "status": "empty",
+          "source": "SubscriptionInfo.getMncString",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "empty",
+          "acquisitionPermissions": [
+            "READ_PHONE_STATE"
+          ]
+        },
+        {
+          "path": "subscriptionHistory[0].carrierId",
+          "value": null,
+          "status": "empty",
+          "source": "SubscriptionInfo.getCarrierId",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "empty",
+          "acquisitionPermissions": [
+            "READ_PHONE_STATE"
+          ]
+        },
+        {
+          "path": "subscriptionHistory[0].dataRoaming",
+          "value": null,
+          "status": "empty",
+          "source": "SubscriptionInfo.getDataRoaming",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "empty",
+          "acquisitionPermissions": [
+            "READ_PHONE_STATE"
+          ]
+        },
+        {
+          "path": "subscriptionHistory[0].opportunistic",
+          "value": null,
+          "status": "empty",
+          "source": "SubscriptionInfo.isOpportunistic",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "empty",
+          "acquisitionPermissions": [
+            "READ_PHONE_STATE"
+          ]
+        },
+        {
+          "path": "subscriptionHistory[0].subscriptionType",
+          "value": null,
+          "status": "empty",
+          "source": "SubscriptionInfo.getSubscriptionType",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "empty",
+          "acquisitionPermissions": [
+            "READ_PHONE_STATE"
+          ]
+        },
+        {
+          "path": "subscriptionHistory[0].portIndex",
+          "value": null,
+          "status": "empty",
+          "source": "SubscriptionInfo.getPortIndex",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "empty",
+          "acquisitionPermissions": [
+            "READ_PHONE_STATE"
+          ]
+        },
+        {
+          "path": "subscriptionHistory[0].usageSetting",
+          "value": null,
+          "status": "empty",
+          "source": "SubscriptionInfo.getUsageSetting",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "empty",
+          "acquisitionPermissions": [
+            "READ_PHONE_STATE"
+          ]
+        },
+        {
+          "path": "subscriptionHistory[0].onlyNonTerrestrial",
+          "value": null,
+          "status": "empty",
+          "source": "SubscriptionInfo.isOnlyNonTerrestrialNetwork",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": true,
+          "observedStatus": "empty",
+          "acquisitionPermissions": [
+            "READ_PHONE_STATE"
+          ]
+        },
+        {
+          "path": "subscriptionHistory.capturedAtUtc",
+          "value": "2026-11-10T00:00:00Z",
+          "status": "available",
+          "source": "SubscriptionManager.getAllSubscriptionInfoList",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": false,
+          "observedStatus": null,
+          "acquisitionPermissions": []
+        },
+        {
+          "path": "subscriptionHistory.completedAtUtc",
+          "value": "2026-11-10T00:00:00Z",
+          "status": "available",
+          "source": "SubscriptionManager.getAllSubscriptionInfoList",
+          "permission": "none",
+          "note": null,
+          "errorType": null,
+          "sensitive": false,
+          "observedStatus": null,
+          "acquisitionPermissions": []
+        }
+      ],
+      "warnings": []
+    },
+    "changedPaths": [],
+    "note": "保持网络和设备条件相同；差异可能来自网络变化，不能单凭此次对照归因于权限"
+  }
 }

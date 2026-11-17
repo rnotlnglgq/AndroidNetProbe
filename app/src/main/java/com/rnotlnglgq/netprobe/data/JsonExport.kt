@@ -3,6 +3,7 @@ package com.rnotlnglgq.netprobe.data
 import com.google.gson.GsonBuilder
 import com.rnotlnglgq.netprobe.model.*
 import java.time.Instant
+import java.time.Clock
 
 object JsonExport {
     val gson = GsonBuilder().setPrettyPrinting().serializeNulls().disableHtmlEscaping().create()
@@ -16,9 +17,8 @@ object JsonExport {
         }
     )
 
-    fun render(snapshot: NetworkSnapshot, raw: Boolean, events: List<NetworkEvent> = emptyList(), comparison: PermissionComparison? = null): String =
-        gson.toJson(ExportDocument(exportMode = if (raw) "raw" else "redacted",
-            exportedAtUtc = Instant.now().toString(), snapshot = if (raw) snapshot else redact(snapshot),
-            eventHistory = events, permissionComparison = if (raw) comparison else comparison?.copy(
+    fun render(snapshot: NetworkSnapshot, raw: Boolean, events: List<NetworkEvent> = emptyList(), comparison: PermissionComparison? = null, clock: Clock = Clock.systemUTC()): String =
+        gson.toJson(ExportWire.document(if (raw) snapshot else redact(snapshot), raw,
+            Instant.now(clock).toString(), events, if (raw) comparison else comparison?.copy(
                 before = redact(comparison.before), after = redact(comparison.after))))
 }
