@@ -12,6 +12,13 @@ val releaseSigning = Properties().apply {
     if (releaseSigningFile.exists()) releaseSigningFile.inputStream().use { load(it) }
 }
 
+val distributionAbi = providers.gradleProperty("netprobeAbi").orElse("universal").get()
+require(distributionAbi in setOf("universal", "arm64-v8a", "armeabi-v7a")) {
+    "netprobeAbi must be universal, arm64-v8a or armeabi-v7a"
+}
+val distributionAbis = if (distributionAbi == "universal")
+    listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64") else listOf(distributionAbi)
+
 android {
     namespace = "com.rnotlnglgq.netprobe"
     compileSdk {
@@ -29,7 +36,7 @@ android {
         versionCode = 9
         versionName = "0.1.0"
 
-        ndk { abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64") }
+        ndk { abiFilters += distributionAbis }
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

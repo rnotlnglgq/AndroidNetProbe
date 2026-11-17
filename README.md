@@ -21,7 +21,7 @@ Android 网络信息可见性探针。用于在自己的设备上查看应用能
 
 ## 使用
 
-从 [Releases](https://github.com/rnotlnglgq/AndroidNetProbe/releases) 获取 APK。Android 15 是主要使用目标，Android 13、14、15 模拟器已完成基础检查。
+从 [Releases](https://github.com/rnotlnglgq/AndroidNetProbe/releases) 获取 APK。多数近期手机选择 `arm64-v8a`，32 位 ARM 设备选择 `armeabi-v7a`，也可使用覆盖四种架构的 `universal`。最低 Android 8；Android 15 是主要使用目标，Android 13、14、15 模拟器已完成基础检查。各栏目按系统版本提供可读字段。
 
 顶部页签按信息类别浏览，接口和订阅提供子页签。“显示完整值”用于查看、复制精确地址；“更多”提供 JSON、权限对照和公网配置。各栏标题标出运行时授权条件，API 来源与错误可在“技术详情”查看。
 

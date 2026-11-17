@@ -8,9 +8,11 @@ CI 固定 Ubuntu 24.04、JDK 25、SDK Platform 37.0、Build Tools 36.0.0、NDK 2
 
 ## 发布包
 
-应用名称为 NetProbe，包名为 `com.rnotlnglgq.netprobe`。正式附件命名为 `NetProbe-X.Y.Z-universal.apk`，使用 release 构建，覆盖 arm64-v8a、armeabi-v7a、x86 和 x86_64。当前最低 Android 8 / API 26，主要使用目标为 Android 15。
+应用名称为 NetProbe，包名为 `com.rnotlnglgq.netprobe`。正式附件为 `NetProbe-X.Y.Z-arm64-v8a.apk`、`NetProbe-X.Y.Z-armeabi-v7a.apk` 和 `NetProbe-X.Y.Z-universal.apk`。前两个各含对应 ARM 架构，universal 覆盖 arm64-v8a、armeabi-v7a、x86 和 x86_64，均使用 release 构建。当前最低 Android 8 / API 26，主要使用目标为 Android 15。
 
-debug 与 release 为内部构建类型，公开 Release 提供一个 universal APK，语言由包内资源选择。debug APK 保留在 CI 产物中。构建信息同时记录名称、包名、SDK、构建类型和 ABI。
+debug 与 release 为内部构建类型，公开 Release 提供上述三个 APK，语言由包内资源选择。debug APK 保留在 CI 产物中。构建信息逐包记录名称、包名、SDK、构建类型、ABI、签名与摘要。三个包沿用同一 versionCode，可按设备架构选择。
+
+普通本机构建与日常 CI 默认只生成 universal；tag 发布流程在完整检查后，额外执行 `assembleRelease -PnetprobeAbi=arm64-v8a` 与 `assembleRelease -PnetprobeAbi=armeabi-v7a`。产物先保存在 `app/build/distributions/`，逐包验证后写入 `dist/`。
 
 ## 共享签名
 

@@ -21,6 +21,7 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('apk',type=Path)
     parser.add_argument('--readelf',type=Path)
+    parser.add_argument('--distribution',choices=['universal','arm64-v8a','armeabi-v7a'],default='universal')
     args=parser.parse_args()
     root=Path(__file__).resolve().parent.parent
     sdk=os.environ.get('ANDROID_SDK_ROOT') or os.environ.get('ANDROID_HOME')
@@ -33,7 +34,8 @@ def main():
     assert covered(0x5000,0x6000,[(0,0x2000),(0x5000,0x6000)])
     with zipfile.ZipFile(args.apk) as apk,tempfile.TemporaryDirectory(prefix='netprobe-elf-') as tmp:
         names=[n for n in apk.namelist() if re.fullmatch(r'lib/(armeabi-v7a|arm64-v8a|x86|x86_64)/libnetprobe_bionic.so',n)]
-        assert len(names)==4,'Missing native ABI'
+        expected={'armeabi-v7a','arm64-v8a','x86','x86_64'} if args.distribution=='universal' else {args.distribution}
+        assert {name.split('/')[1] for name in names}==expected,'Unexpected native ABI set'
         for name in names:
             abi=name.split('/')[1]; path=Path(tmp)/f'{abi}.so';path.write_bytes(apk.read(name))
             text=subprocess.run([str(readelf),'-lW',str(path)],capture_output=True,text=True,check=True).stdout

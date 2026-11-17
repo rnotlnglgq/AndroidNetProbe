@@ -24,6 +24,19 @@ jobs:
         run: python3 scripts/release.py validate-tag --tag "$RELEASE_TAG" --main-ref origin/main
       - name: Build and test
         uses: ./.github/actions/android-build
+      - name: Build ARM release APKs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p app/build/distributions/universal
+          cp app/build/outputs/apk/release/app-release.apk app/build/distributions/universal/app-release.apk
+          for abi in arm64-v8a armeabi-v7a; do
+            ./gradlew assembleRelease -PnetprobeAbi="$abi" --console=plain
+            python3 scripts/release.py verify-apk --apk app/build/outputs/apk/release/app-release.apk --distribution "$abi"
+            python3 scripts/check-native-elf.py app/build/outputs/apk/release/app-release.apk --distribution "$abi"
+            mkdir -p "app/build/distributions/$abi"
+            cp app/build/outputs/apk/release/app-release.apk "app/build/distributions/$abi/app-release.apk"
+          done
       - name: Package release
         env:
           RELEASE_TAG: ${{ github.ref_name }}
@@ -60,13 +73,17 @@ jobs:
           set -euo pipefail
           [[ "$RELEASE_TAG" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]
           (cd dist && sha256sum --check SHA256SUMS)
-          apk="dist/NetProbe-${RELEASE_TAG#v}-universal.apk"
-          test -f "$apk"
+          apks=()
+          for abi in arm64-v8a armeabi-v7a universal; do
+            apk="dist/NetProbe-${RELEASE_TAG#v}-${abi}.apk"
+            test -f "$apk"
+            apks+=("$apk")
+          done
           if gh release view "$RELEASE_TAG" --repo "$GH_REPO" > /dev/null 2>&1; then
             echo "Release already exists: $RELEASE_TAG" >&2
             exit 1
           fi
-          gh release create "$RELEASE_TAG" "$apk" dist/SHA256SUMS dist/build-info.json \
+          gh release create "$RELEASE_TAG" "${apks[@]}" dist/SHA256SUMS dist/build-info.json \
             --repo "$GH_REPO" --verify-tag --draft --generate-notes --title "NetProbe ${RELEASE_TAG#v}"
           notes="${RUNNER_TEMP}/netprobe-release-notes.md"
           gh release view "$RELEASE_TAG" --repo "$GH_REPO" --json body --jq .body > "$notes"
