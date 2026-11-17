@@ -28,7 +28,8 @@ fun ProbeScreen(model: ProbeViewModel, onPermissionRequest: (String) -> Unit, on
     val tabs = linkedMapOf("overview" to "概览", "interfaces" to "接口", "native" to "Native 接口", "addresses" to "IP 地址", "dns" to "DNS 与路由",
         "wifi" to "Wi-Fi", "telephony" to "运营商", "subscriptions" to "订阅", "external" to "公网", "properties" to "系统属性", "permissions" to "权限", "device" to "设备")
     val pageState = rememberSaveableStateHolder()
-    val fields = model.snapshot?.fieldResults.orEmpty()
+    val uiState by model.state.collectAsState()
+    val fields = uiState.snapshot?.fieldResults.orEmpty()
     val defaultInterface = fields.firstOrNull { it.path == FieldKeys.DEFAULT_INTERFACE }?.value as? String
     val time = model.snapshot?.capturedAtUtc?.let { runCatching {
         DateTimeFormatter.ofPattern("HH:mm:ss").withZone(ZoneId.systemDefault()).format(Instant.parse(it))

@@ -15,6 +15,14 @@ import com.rnotlnglgq.netprobe.ui.ProbeViewModel
 import com.rnotlnglgq.netprobe.ui.theme.NetProbeTheme
 
 class MainActivity : ComponentActivity() {
+    override val defaultViewModelProviderFactory: androidx.lifecycle.ViewModelProvider.Factory
+        get() = object : androidx.lifecycle.ViewModelProvider.Factory {
+            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+                require(modelClass == ProbeViewModel::class.java)
+                @Suppress("UNCHECKED_CAST")
+                return ProbeViewModel(com.rnotlnglgq.netprobe.data.ProbeServices(application)) as T
+            }
+        }
     private val model by lazy { ViewModelProvider(this)[ProbeViewModel::class.java] }
     private val exporter = registerForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { model.writeExport(it) }
     private val permissions = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { model.permissionsReturned() }
