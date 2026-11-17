@@ -6,7 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.ViewModelProvider
@@ -14,7 +14,7 @@ import com.rnotlnglgq.netprobe.ui.ProbeScreen
 import com.rnotlnglgq.netprobe.ui.ProbeViewModel
 import com.rnotlnglgq.netprobe.ui.theme.NetProbeTheme
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
     override val defaultViewModelProviderFactory: androidx.lifecycle.ViewModelProvider.Factory
         get() = object : androidx.lifecycle.ViewModelProvider.Factory {
             override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {

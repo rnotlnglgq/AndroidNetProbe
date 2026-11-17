@@ -63,7 +63,11 @@ class LanguageUiTest {
             val label=app.createConfigurationContext(config).resources.getString(R.string.ui_copy_cidr)
             compose.onNodeWithText(label).performScrollTo().assertIsDisplayed().performClick()
             val clipboard=app.getSystemService(android.content.ClipboardManager::class.java)
-            assertEquals("2001:db8::42/64",clipboard.primaryClip!!.getItemAt(0).text.toString())
+            compose.waitUntil(5000) {
+                var value: String?=null
+                compose.runOnIdle { value=clipboard.primaryClip?.getItemAt(0)?.text?.toString() }
+                value=="2001:db8::42/64"
+            }
         }
     }
     @Test fun quantityResourcesAndPseudoLocalesHaveCompleteDefaults() {

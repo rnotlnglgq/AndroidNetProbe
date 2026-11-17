@@ -9,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.rnotlnglgq.netprobe.model.*
 import kotlinx.coroutines.launch
@@ -25,6 +26,7 @@ fun ProbeScreen(model: ProbeViewModel, onPermissionRequest: (String) -> Unit, on
     var endpointConfig by remember { mutableStateOf(false) }
     var permissions by remember { mutableStateOf(false) }
     var exporting by remember { mutableStateOf(false) }
+    var languageSettings by rememberSaveable { mutableStateOf(false) }
     var menu by remember { mutableStateOf(false) }
     var page by rememberSaveable { mutableStateOf("overview") }
     val tabs = linkedMapOf("overview" to strings.get(R.string.ui_overview), "interfaces" to strings.get(R.string.ui_interfaces), "native" to strings.get(R.string.ui_native_interfaces), "addresses" to strings.get(R.string.ui_ip_addresses), "dns" to strings.get(R.string.ui_dns_and_routes),
@@ -42,6 +44,7 @@ fun ProbeScreen(model: ProbeViewModel, onPermissionRequest: (String) -> Unit, on
     if (endpointConfig) EndpointScreen(model, onDismiss = { endpointConfig = false })
     if (permissions) PermissionScreen(model, onDismiss = { permissions = false }, onRequest = onPermissionRequest, onSettings = onSettings)
     if (exporting) ExportScreen(onDismiss = { exporting = false }) { raw -> exporting = false; onExport(raw) }
+    if (languageSettings) LanguageSettings(onDismiss = { languageSettings = false })
     Scaffold(snackbarHost = { SnackbarHost(snackbar) }, topBar = {
         Surface(shadowElevation = 2.dp) {
             Column(Modifier.statusBarsPadding()) {
@@ -52,13 +55,15 @@ fun ProbeScreen(model: ProbeViewModel, onPermissionRequest: (String) -> Unit, on
                     }
                     TextButton(onClick = { model.reveal = !model.reveal }) { Text(if (model.reveal) strings.get(R.string.ui_hide_full_values) else strings.get(R.string.ui_show_full_values)) }
                     Box {
-                        TextButton(onClick = { menu = true }) { Text(strings.get(R.string.ui_more)) }
+                        TextButton(modifier = Modifier.testTag("menu-more"), onClick = { menu = true }) { Text(strings.get(R.string.ui_more)) }
                         DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
                             DropdownMenuItem(text = { Text(strings.get(R.string.ui_view_copy_json)) }, enabled = model.snapshot != null,
                                 onClick = { menu = false; model.snapshot?.let { jsonPreview = JsonPreview.of(it, model.events, model.comparison) } })
                             DropdownMenuItem(text = { Text(strings.get(R.string.ui_export_json)) }, enabled = model.snapshot != null, onClick = { menu = false; exporting = true })
                             DropdownMenuItem(text = { Text(strings.get(R.string.ui_permissions_and_comparison)) }, onClick = { menu = false; permissions = true })
                             DropdownMenuItem(text = { Text(strings.get(R.string.ui_public_checks)) }, onClick = { menu = false; endpointConfig = true })
+                            DropdownMenuItem(modifier = Modifier.testTag("settings-language"), text = { Text(strings.get(R.string.language_settings)) },
+                                onClick = { menu = false; languageSettings = true })
                         }
                     }
                 }

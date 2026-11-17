@@ -438,4 +438,6 @@
     <string name="ui_list_separator">、</string>
     <string name="endpoint_ipv4_url_label">IPv4 专用 HTTPS 地址</string>
     <string name="endpoint_ipv6_url_label">IPv6 专用 HTTPS 地址</string>
+    <string name="language_settings">语言</string>
+    <string name="language_follow_system">跟随系统</string>
 </resources>
