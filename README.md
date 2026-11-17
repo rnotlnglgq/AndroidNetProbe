@@ -1,40 +1,42 @@
 # NetProbe
 
-Android 网络信息可见性探针。用于在自己的设备上查看应用能读取哪些网络信息，以及授权前后的变化。本项目旨在帮助用户理解Android软件开发商具备的网络部分的遥测能力。
+English | [简体中文](README.zh-CN.md)
 
-## 功能
+An Android probe for exploring the network information available to apps. Use it on your own device to inspect what apps can read and how granting permissions changes that view. NetProbe helps you understand the network telemetry that Android software developers can collect.
 
-| 功能系列 | 可查看内容 | 使用条件 |
+## Features
+
+| Category | Information | Availability and controls |
 |---|---|---|
-| 网络概览 | 默认网络、VPN、计费状态、互联网验证 | 前台读取 |
-| 接口与 IP | IPv4/IPv6、前缀、地址类型、接口状态、MTU | 按接口切换，支持复制地址和 CIDR |
-| DNS 与路由 | DNS、Private DNS、NAT64、路由、HTTP 代理 | 当前网络的系统可见信息 |
-| 运营商 | SIM/注册运营商、MCC/MNC、国家、漫游、Carrier ID、信号 | 基础字段直接读取，逐订阅信息需要电话权限 |
-| 订阅记录 | 当前 SIM、显示名称、eSIM、系统保留的历史订阅 | 电话权限；历史记录需 Android 14+ 并手动读取 |
-| 服务状态 | 网络制式、注册域、PLMN、无线信号 | 部分查询需要电话与位置权限 |
-| Wi-Fi | SSID/BSSID、频率、安全类型、连接速率 | 精确位置权限和系统位置开关 |
-| 系统属性 | 型号、版本、运营商及网络相关固定属性 | 手动执行 `getprop` 读取，范围由系统策略决定 |
-| Native 接口 | Bionic `getifaddrs()` 的接口与地址视图 | 手动读取，测试功能 |
-| 公网检测 | IPv4/IPv6 连通性、出口 IP、Cloudflare 节点 | 点击确认后连接 Cloudflare 或自有 HTTPS 服务 |
-| 界面语言 | 简体中文、英文及英文回退 | 通过“更多 → 语言”选择，支持跟随系统 |
-| 记录与导出 | 前台变化监测、权限对照、JSON 查看与导出 | 可选择遮挡版或完整数据 |
+| Network overview | Default network, VPN, metering, internet validation | Read while the app is in the foreground |
+| Interfaces and IP | IPv4/IPv6, prefixes, address types, interface state, MTU | Switch between interfaces; copy addresses and CIDR notation |
+| DNS and routes | DNS, Private DNS, NAT64, routes, HTTP proxy | Information exposed by the system for the current network |
+| Carrier | SIM and registered operator, MCC/MNC, country, roaming, Carrier ID, signal | Basic fields available directly; per-subscription information requires phone permission |
+| Subscription records | Current SIMs, display names, eSIM, system-retained subscription history | Phone permission; history requires Android 14+ and a manual read |
+| Service state | Radio technology, registration domains, PLMN, radio signals | Some queries require phone and location permissions |
+| Wi-Fi | SSID/BSSID, frequency, security type, link speeds | Precise location permission and system location enabled |
+| System properties | Fixed queries for device, build, carrier, and network properties | Manually read through `getprop`; visibility follows system policy |
+| Native interfaces | Interface and address view from Bionic `getifaddrs()` | Manual read; experimental feature |
+| Public network checks | IPv4/IPv6 connectivity, public IP, Cloudflare location | Connect to Cloudflare or your own HTTPS service after confirmation |
+| Interface language | Simplified Chinese, English, and English fallback | Choose under “More → Language”, or follow the system |
+| Recording and export | Foreground change monitoring, permission comparisons, JSON viewing and export | Choose redacted or full data |
 
-## 使用
+## Usage
 
-从 [Releases](https://github.com/rnotlnglgq/AndroidNetProbe/releases) 获取 APK。多数近期手机选择 `arm64-v8a`，32 位 ARM 设备选择 `armeabi-v7a`，也可使用覆盖四种架构的 `universal`。最低 Android 8；Android 15 是主要使用目标，Android 13、14、15 模拟器已完成基础检查。各栏目按系统版本提供可读字段。
+Download an APK from [Releases](https://github.com/rnotlnglgq/AndroidNetProbe/releases). Choose `arm64-v8a` for most recent phones, `armeabi-v7a` for 32-bit ARM devices, or `universal` for all four supported architectures. Android 8 is the minimum version; Android 15 is the primary target. Basic checks have passed on Android 13, 14, and 15 emulators. Field availability depends on the Android version.
 
-顶部页签按信息类别浏览，接口和订阅提供子页签。“显示完整值”用于查看、复制精确地址；“更多”提供 JSON、权限对照和公网配置。各栏标题标出运行时授权条件，API 来源与错误可在“技术详情”查看。
+Browse by category using the top tabs. Interfaces and subscriptions have their own subtabs. “Show full values” lets you view and copy exact addresses; “More” provides JSON, permission comparisons, and public check settings. Section headers show runtime permission requirements. “Technical details” lists API sources and errors.
 
-结果主要保存在内存，读取开关和端点配置保存在应用私有配置中。JSON 通过系统文件选择器保存，默认遮挡地址和运营商信息；选择云盘时，文件可能由云盘同步。
+Results are mainly held in memory. Reader switches and endpoint settings are saved in private app preferences. JSON is saved through the system file picker, with addresses and carrier information redacted by default. A cloud storage provider may sync files saved to it.
 
-公网检测由用户确认后执行，接收方会看到出口 IP 和请求时间。自有服务的部署方式见 [服务端说明](server/README.md)。字段结构与人工示例见 [Schema](samples/schema-1.0.json) 和 [samples](samples/)。
+Public network checks run after confirmation. The recipient sees your public IP and request time. See the [server guide](server/README.md) for hosting your own endpoint, and the [Schema](samples/schema-1.0.json) and [synthetic examples](samples/) for the export format.
 
-## 自行修改
+## Making changes
 
-使用 Android Studio 打开项目。Release 构建默认使用仓库内的共享签名，便于修改版之间覆盖更新；Android 以相同签名接受这些更新，来源由安装者自行核对。本机 `release-signing.properties` 可覆盖默认签名。
+Open the project in Android Studio. Release builds use the shared signing identity in the repository, allowing modified builds to update existing installations. Android accepts updates signed with the same identity; installers are responsible for checking their source. A local `release-signing.properties` file overrides the default signing configuration.
 
-CI 与版本 tag 发布流程见 [维护说明](.github/RELEASING.md)。
+See the [maintainer guide](.github/RELEASING.md) for CI and version-tag releases.
 
-## 许可证
+## License
 
-本项目采用 [GNU GPL v3.0](LICENSE)（GPL-3.0-only）。
+Licensed under [GNU GPL v3.0](LICENSE) (GPL-3.0-only).
