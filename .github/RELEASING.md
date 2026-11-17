@@ -6,6 +6,12 @@
 
 CI 固定 Ubuntu 24.04、JDK 25、SDK Platform 37.0、Build Tools 36.0.0、NDK 25.1.8937393、CMake 3.22.1。Android 13–15 模拟器检查按需要另行安排。
 
+## 发布包
+
+应用名称为 NetProbe，包名为 `com.rnotlnglgq.netprobe`。正式附件命名为 `NetProbe-X.Y.Z-universal.apk`，使用 release 构建，覆盖 arm64-v8a、armeabi-v7a、x86 和 x86_64。当前最低 Android 8 / API 26，主要使用目标为 Android 15。
+
+debug 与 release 为内部构建类型，公开 Release 提供一个 universal APK，语言由包内资源选择。debug APK 保留在 CI 产物中。构建信息同时记录名称、包名、SDK、构建类型和 ABI。
+
 ## 共享签名
 
 项目采用公开共享签名。`signing/public-research.p12` 和 `signing/public-signing.properties` 提供既有 release 身份，证书指纹位于 `signing/certificate-sha256.txt`。取得这些文件的人都能签署可覆盖现有 release 的修改版，安装者自行核对来源。

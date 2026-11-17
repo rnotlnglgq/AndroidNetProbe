@@ -5,6 +5,7 @@ from pathlib import Path
 import subprocess
 import tempfile
 import unittest
+import zipfile
 from unittest.mock import patch
 
 MODULE = Path(__file__).resolve().parents[1] / 'release.py'
@@ -38,6 +39,32 @@ class VersionTest(unittest.TestCase):
         self.assertEqual('a' * 64, release.certificate('Signer #1 certificate SHA-256 digest: ' + 'a' * 64))
         with self.assertRaises(ValueError):
             release.certificate('Signer #1 certificate SHA-256 digest: ' + 'a' * 64 + '\nSigner #2 certificate SHA-256 digest: ' + 'b' * 64)
+
+
+class DistributionTest(unittest.TestCase):
+    def test_sdk_label_and_all_abis_are_recorded(self):
+        with tempfile.TemporaryDirectory(prefix='netprobe-distribution-test-') as directory:
+            apk = Path(directory) / 'test.apk'
+            with zipfile.ZipFile(apk, 'w') as archive:
+                for abi in release.UNIVERSAL_ABIS:
+                    archive.writestr(f'lib/{abi}/libnetprobe_bionic.so', b'fixture')
+            badging = "application-label:'NetProbe'\nminSdkVersion:'26'\ntargetSdkVersion:'37'\n"
+            info = release.distribution_metadata(apk, badging)
+            self.assertEqual('universal', info['distribution'])
+            self.assertEqual(26, info['minSdk'])
+            self.assertEqual(37, info['targetSdk'])
+            self.assertEqual(list(release.UNIVERSAL_ABIS), info['abis'])
+            for invalid in (badging.replace('NetProbe', 'Other'), badging.replace("minSdkVersion:'26'", '')):
+                with self.assertRaises(ValueError):
+                    release.distribution_metadata(apk, invalid)
+
+    def test_incomplete_native_distribution_is_rejected(self):
+        with tempfile.TemporaryDirectory(prefix='netprobe-distribution-test-') as directory:
+            apk = Path(directory) / 'test.apk'
+            with zipfile.ZipFile(apk, 'w') as archive:
+                archive.writestr('lib/arm64-v8a/libnetprobe_bionic.so', b'fixture')
+            with self.assertRaisesRegex(ValueError, 'all four'):
+                release.distribution_metadata(apk, "application-label:'NetProbe'\nminSdkVersion:'26'\ntargetSdkVersion:'37'\n")
 
 
 class TagTest(unittest.TestCase):
@@ -98,7 +125,7 @@ class PackageTest(unittest.TestCase):
             info = {'apkSha256': hashlib.sha256(source.read_bytes()).hexdigest()}
             with patch.object(release, 'validate_tag', return_value=validation), patch.object(release, 'verify_apk', return_value=info):
                 result = release.package_release('v0.1.0', root)
-                self.assertEqual('NetProbe-0.1.0.apk', result['apkFile'])
+                self.assertEqual('NetProbe-0.1.0-universal.apk', result['apkFile'])
                 self.assertEqual('public-shared-project-key', result['signingPolicy'])
                 metadata = json.loads((root / 'dist/build-info.json').read_text())
                 self.assertEqual('a' * 40, metadata['gitCommit'])

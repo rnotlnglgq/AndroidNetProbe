@@ -60,7 +60,7 @@ jobs:
           set -euo pipefail
           [[ "$RELEASE_TAG" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]
           (cd dist && sha256sum --check SHA256SUMS)
-          apk="dist/NetProbe-${RELEASE_TAG#v}.apk"
+          apk="dist/NetProbe-${RELEASE_TAG#v}-universal.apk"
           test -f "$apk"
           if gh release view "$RELEASE_TAG" --repo "$GH_REPO" > /dev/null 2>&1; then
             echo "Release already exists: $RELEASE_TAG" >&2

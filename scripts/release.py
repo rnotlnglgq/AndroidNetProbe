@@ -8,8 +8,10 @@ from pathlib import Path
 import re
 import shutil
 import subprocess
+import zipfile
 
 ROOT = Path(__file__).resolve().parent.parent
+UNIVERSAL_ABIS = ('arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64')
 SEMVER = r'(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)'
 
 
@@ -82,11 +84,30 @@ def certificate(text):
     return found[0].lower()
 
 
+def distribution_metadata(apk, badging):
+    def integer(key):
+        match = re.search(r"^" + key + r":'([0-9]+)'$", badging, re.M)
+        if not match:
+            raise ValueError(f'Missing APK SDK metadata: {key}')
+        return int(match.group(1))
+    label = re.search(r"^application-label:'([^']+)'$", badging, re.M)
+    if not label or label.group(1) != 'NetProbe':
+        raise ValueError('Expected application label NetProbe')
+    with zipfile.ZipFile(apk) as archive:
+        abis = sorted(name.split('/')[1] for name in archive.namelist()
+                      if re.fullmatch(r'lib/[^/]+/libnetprobe_bionic\.so', name))
+    if tuple(abis) != UNIVERSAL_ABIS:
+        raise ValueError(f'Expected universal APK with all four native ABIs: {abis}')
+    return {'applicationLabel': label.group(1), 'minSdk': integer('minSdkVersion'),
+            'targetSdk': integer('targetSdkVersion'), 'distribution': 'universal', 'abis': abis}
+
+
 def verify_apk(apk, debug=False, root=ROOT):
     apk = Path(apk).resolve()
     tools = android_sdk(root) / 'build-tools/36.0.0'
     signature = run(tools / 'apksigner', 'verify', '--verbose', '--print-certs', apk)
-    info = apk_metadata(run(tools / 'aapt2', 'dump', 'badging', apk))
+    badging = run(tools / 'aapt2', 'dump', 'badging', apk)
+    info = apk_metadata(badging)
     expected_name, expected_code = versions((root / 'app/build.gradle.kts').read_text())
     if info != {'applicationId': 'com.rnotlnglgq.netprobe', 'versionCode': expected_code,
                 'versionName': expected_name, 'debuggable': debug}:
@@ -95,7 +116,14 @@ def verify_apk(apk, debug=False, root=ROOT):
     if not debug and fingerprint != (root / 'signing/certificate-sha256.txt').read_text().strip().lower():
         raise ValueError('Release signing certificate differs from the shared identity')
     run(tools / 'zipalign', '-c', '-P', '16', '4', apk)
-    return {**info, 'certificateSha256': fingerprint, 'apkSha256': hashlib.sha256(apk.read_bytes()).hexdigest()}
+    distribution = distribution_metadata(apk, badging)
+    gradle = (root / 'app/build.gradle.kts').read_text()
+    for key in ('minSdk', 'targetSdk'):
+        configured = re.findall(r'^\s*' + key + r'\s*=\s*([0-9]+)\s*$', gradle, re.M)
+        if len(configured) != 1 or distribution[key] != int(configured[0]):
+            raise ValueError(f'APK {key} differs from Gradle configuration')
+    return {**info, **distribution, 'variant': 'debug' if debug else 'release',
+            'certificateSha256': fingerprint, 'apkSha256': hashlib.sha256(apk.read_bytes()).hexdigest()}
 
 
 def package_release(tag, root=ROOT):
@@ -106,7 +134,7 @@ def package_release(tag, root=ROOT):
     if out.exists():
         raise ValueError('dist already exists; use a fresh workspace or move previous output')
     out.mkdir()
-    destination = out / f'NetProbe-{validated["versionName"]}.apk'
+    destination = out / f'NetProbe-{validated["versionName"]}-universal.apk'
     shutil.copyfile(source, destination)
     jdk = subprocess.run(['java', '-version'], check=True, capture_output=True, text=True).stderr.splitlines()[0]
     metadata = {**validated, **info, 'apkFile': destination.name, 'signingPolicy': 'public-shared-project-key',
