@@ -64,8 +64,16 @@ class ProbeViewModel(app: Application) : AndroidViewModel(app) {
     private var captureJob: Job? = null
     private var pending: Pair<String, NetworkSample?>? = null
     private var pendingExport: String? = null
+    private val snapshots = SnapshotStore()
     var snapshot by mutableStateOf<NetworkSnapshot?>(null)
         private set
+
+    init {
+        snapshots.replaceSection(FieldSection.PROPERTIES, propertyDocument.fields)
+        snapshots.replaceSection(FieldSection.NATIVE, nativeDocument.fields)
+        snapshots.replaceSection(FieldSection.HISTORY, historyDocument.fields)
+        viewModelScope.launch { snapshots.snapshot.collect { snapshot = it } }
+    }
     var busy by mutableStateOf(false)
         private set
     var monitoring by mutableStateOf(true)
@@ -83,7 +91,7 @@ class ProbeViewModel(app: Application) : AndroidViewModel(app) {
         foreground = true
         if (historyDocument.capturedAtUtc != null && getApplication<Application>().checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
             historyDocument = SubscriptionHistoryDocument.collect(Build.VERSION.SDK_INT, phoneExperiment, true, false) { emptyList() }
-            snapshot = snapshot?.let { historyDocument.attach(it) }
+            snapshots.replaceSection(FieldSection.HISTORY, historyDocument.fields)
         }
         if (monitoring) { startObserver(); startWifi() }
         refresh("foreground")
@@ -146,9 +154,10 @@ class ProbeViewModel(app: Application) : AndroidViewModel(app) {
                     val result = withContext(Dispatchers.IO) { repository.capture(request.first, request.second, phoneExperiment,
                         wifi.collect(wifiExperiment), externalFields(externalResults)) }
                     ensureActive()
-                    snapshot = historyDocument.attach(nativeDocument.attach(propertyDocument.attach(result)))
+                    snapshots.replaceBase(result)
+                    val assembled = requireNotNull(snapshots.snapshot.value)
                     if (compareAfterResult) {
-                        baseline?.let { comparison = PermissionComparison.between(experimentKind, it, result) }
+                        baseline?.let { comparison = PermissionComparison.between(experimentKind, it, assembled) }
                         compareAfterResult = false
                     }
                     events = (events + NetworkEvent(result.capturedAtUtc, result.event)).takeLast(40)
@@ -171,7 +180,7 @@ class ProbeViewModel(app: Application) : AndroidViewModel(app) {
                 }
                 ensureActive()
                 historyDocument = result
-                snapshot = snapshot?.let { result.attach(it) }
+                snapshots.replaceSection(FieldSection.HISTORY, result.fields)
                 events = (events + NetworkEvent(result.completedAtUtc.orEmpty(), "subscription_history_read")).takeLast(40)
             } catch (e: CancellationException) { throw e }
             catch (e: Exception) { message = "订阅记录读取失败：${e.javaClass.simpleName}" }
@@ -189,7 +198,7 @@ class ProbeViewModel(app: Application) : AndroidViewModel(app) {
                 val result = withContext(Dispatchers.IO) { BionicInterfaceProbe().capture() }
                 ensureActive()
                 nativeDocument = result
-                snapshot = snapshot?.let { result.attach(it) }
+                snapshots.replaceSection(FieldSection.NATIVE, result.fields)
                 events = (events + NetworkEvent(result.completedAtUtc.orEmpty(), "bionic_interfaces_read")).takeLast(40)
             } finally { if (generation == nativeGeneration) nativeBusy = false }
         }
@@ -205,7 +214,7 @@ class ProbeViewModel(app: Application) : AndroidViewModel(app) {
                 val result = withContext(Dispatchers.IO) { probe.collect() }
                 ensureActive()
                 propertyDocument = result
-                snapshot = snapshot?.let { result.attach(it) }
+                snapshots.replaceSection(FieldSection.PROPERTIES, result.fields)
                 events = (events + NetworkEvent(result.completedAtUtc.orEmpty(), "system_properties_read")).takeLast(40)
                 message = "系统属性已读取"
             } catch (e: CancellationException) { throw e }
@@ -245,7 +254,7 @@ class ProbeViewModel(app: Application) : AndroidViewModel(app) {
                 historyJob?.cancel()
                 historyBusy = false
                 historyDocument = SubscriptionHistoryDocument.initial(Build.VERSION.SDK_INT)
-                snapshot = snapshot?.let { historyDocument.attach(it) }
+                snapshots.replaceSection(FieldSection.HISTORY, historyDocument.fields)
             }
         } else wifiExperiment = enabled
         preferences.edit().putBoolean(if (kind == "phone") "phone_enabled" else "wifi_enabled", enabled).apply()
