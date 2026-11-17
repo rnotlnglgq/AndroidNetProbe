@@ -35,8 +35,8 @@ data class SubscriptionHistoryDocument(val capturedAtUtc: String?, val completed
                 records.value?.forEach { fields += it }
             }
             val done = Instant.now().toString()
-            fields += readField("subscriptionHistory.capturedAtUtc", SOURCE) { start }
-            fields += readField("subscriptionHistory.completedAtUtc", SOURCE) { done }
+            fields += readField("subscriptionHistory.capturedAtUtc", SOURCE, sensitive = false) { start }
+            fields += readField("subscriptionHistory.completedAtUtc", SOURCE, sensitive = false) { done }
             return SubscriptionHistoryDocument(start, done, fields)
         }
     }

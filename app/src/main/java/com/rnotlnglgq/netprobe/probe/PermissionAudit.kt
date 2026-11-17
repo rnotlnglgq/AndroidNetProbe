@@ -12,7 +12,7 @@ class PermissionAudit(private val context: Context) {
         val names = listOf("INTERNET", "ACCESS_NETWORK_STATE", "READ_PHONE_STATE", "READ_BASIC_PHONE_STATE",
             "ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION", "ACCESS_WIFI_STATE", "NEARBY_WIFI_DEVICES")
         return names.map { name ->
-            readField("permissions.$name", "PackageManager.requestedPermissions / Context.checkSelfPermission") {
+            readField("permissions.$name", "PackageManager.requestedPermissions / Context.checkSelfPermission", sensitive = false) {
                 val full = "android.permission.$name"
                 when {
                     full !in declared -> "not_declared"
@@ -21,10 +21,10 @@ class PermissionAudit(private val context: Context) {
                 }
             }
         } + listOf(readField("permissions.manifestDeclared", "PackageManager.requestedPermissions",
-            note = "包含依赖库合并的权限。AndroidX DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION 为应用自定义 signature 权限，不赋予设备数据访问能力") {
+            note = "包含依赖库合并的权限。AndroidX DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION 为应用自定义 signature 权限，不赋予设备数据访问能力", sensitive = false) {
             declared.sorted()
         }) + listOf(PackageManager.FEATURE_TELEPHONY, PackageManager.FEATURE_WIFI).map { feature ->
-            readField("features.$feature", "PackageManager.hasSystemFeature") {
+            readField("features.$feature", "PackageManager.hasSystemFeature", sensitive = false) {
                 context.packageManager.hasSystemFeature(feature)
             }
         }

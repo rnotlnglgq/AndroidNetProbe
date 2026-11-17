@@ -78,6 +78,6 @@ class SubscriptionHistoryTest {
         assertNotEquals(alias,SessionSubscriptionIds().alias(12345))
         assertNotEquals("12345",alias)
         assertNotNull(java.util.UUID.fromString(alias.removePrefix("sub-")))
-        assertEquals(1,readField("test","test") { false }.withAcquisition("READ_PHONE_STATE").withAcquisition("READ_PHONE_STATE").acquisitionPermissions.size)
+        assertEquals(1,readField("test","test", sensitive = false) { false }.withAcquisition("READ_PHONE_STATE").withAcquisition("READ_PHONE_STATE").acquisitionPermissions.size)
     }
 }

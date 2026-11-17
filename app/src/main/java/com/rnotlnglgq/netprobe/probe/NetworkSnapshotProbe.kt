@@ -28,17 +28,17 @@ class NetworkSnapshotProbe(context: Context) {
         val fields = mutableListOf<ProbeField<*>>()
         val warnings = mutableListOf<String>()
         val permission = "ACCESS_NETWORK_STATE"
-        val active = readField("defaultNetwork.state", (if (sample == null) "ConnectivityManager.activeNetwork" else "NetworkCallback network argument"), permission) {
+        val active = readField("defaultNetwork.state", (if (sample == null) "ConnectivityManager.activeNetwork" else "NetworkCallback network argument"), permission, sensitive = false) {
             sample?.let { it.network } ?: if (sample == null) manager.activeNetwork else null
         }
         val network = active.value
         fields += ProbeField("defaultNetwork.state", if (network != null) "available" else null,
             if (active.status == FieldStatus.empty) FieldStatus.network_unavailable else active.status,
-            active.source, permission, active.note, active.errorType)
-        val caps = readField("defaultNetwork.capabilities", "ConnectivityManager.getNetworkCapabilities", permission) {
+            active.source, permission, active.note, active.errorType, sensitive = false)
+        val caps = readField("defaultNetwork.capabilities", "ConnectivityManager.getNetworkCapabilities", permission, sensitive = false) {
             if (sample != null) sample.capabilities else network?.let { manager.getNetworkCapabilities(it) }
         }
-        val links = readField("defaultNetwork.linkProperties", "ConnectivityManager.getLinkProperties", permission) {
+        val links = readField("defaultNetwork.linkProperties", "ConnectivityManager.getLinkProperties", permission, sensitive = false) {
             if (sample != null) sample.links else network?.let { manager.getLinkProperties(it) }
         }
         fun <T> add(path: String, source: String, dependency: ProbeField<*>? = null,
@@ -56,7 +56,7 @@ class NetworkSnapshotProbe(context: Context) {
             }
         }
         add("defaultNetwork.sessionNetworkId", "session_random_uuid") { network?.let { sessionId(it) } }
-        add("defaultNetwork.transports", "NetworkCapabilities.hasTransport", caps) {
+        add(FieldKeys.DEFAULT_TRANSPORTS, "NetworkCapabilities.hasTransport", caps) {
             val choices = mutableListOf(
                 NetworkCapabilities.TRANSPORT_WIFI to "WIFI", NetworkCapabilities.TRANSPORT_CELLULAR to "CELLULAR",
                 NetworkCapabilities.TRANSPORT_VPN to "VPN", NetworkCapabilities.TRANSPORT_ETHERNET to "ETHERNET",
@@ -67,16 +67,16 @@ class NetworkSnapshotProbe(context: Context) {
             if (Build.VERSION.SDK_INT >= 35) choices += NetworkCapabilities.TRANSPORT_SATELLITE to "SATELLITE"
             choices.filter { caps.value!!.hasTransport(it.first) }.map { it.second }
         }
-        add("defaultNetwork.validated", "NetworkCapabilities.hasCapability(VALIDATED)", caps) {
+        add(FieldKeys.DEFAULT_VALIDATED, "NetworkCapabilities.hasCapability(VALIDATED)", caps) {
             caps.value!!.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
         }
         add("defaultNetwork.internetCapability", "NetworkCapabilities.hasCapability(INTERNET)", caps) {
             caps.value!!.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
         }
-        add("defaultNetwork.metered", "NetworkCapabilities.hasCapability(NOT_METERED)", caps) {
+        add(FieldKeys.DEFAULT_METERED, "NetworkCapabilities.hasCapability(NOT_METERED)", caps) {
             !caps.value!!.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED)
         }
-        add("defaultNetwork.vpn", "NetworkCapabilities.hasTransport(VPN)", caps,
+        add(FieldKeys.DEFAULT_VPN, "NetworkCapabilities.hasTransport(VPN)", caps,
             note = "仅描述 App 默认网络；未主动枚举 VPN 底层网络") {
             caps.value!!.hasTransport(NetworkCapabilities.TRANSPORT_VPN)
         }
@@ -97,14 +97,14 @@ class NetworkSnapshotProbe(context: Context) {
         add("defaultNetwork.notSuspended", "NetworkCapabilities.hasCapability(NOT_SUSPENDED)", caps, 28) {
             if (Build.VERSION.SDK_INT >= 28) caps.value!!.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_SUSPENDED) else null
         }
-        add("defaultNetwork.interfaceName", "LinkProperties.getInterfaceName", links) { links.value!!.interfaceName }
+        add(FieldKeys.DEFAULT_INTERFACE, "LinkProperties.getInterfaceName", links) { links.value!!.interfaceName }
         fun addresses() = links.value!!.linkAddresses.map { link ->
             AddressRecord(link.address.hostAddress ?: "", if (link.address.address.size == 16) "IPv6" else "IPv4",
                 link.prefixLength, IpClassifier.classify(link.address), link.scope, link.flags,
                 if (link.address.address.size == 16) link.flags and OsConstants.IFA_F_TEMPORARY != 0 else null,
                 link.flags and OsConstants.IFA_F_DEPRECATED != 0, "link_address_flags", FieldStatus.available)
         }
-        add("defaultNetwork.linkAddresses", "LinkProperties.getLinkAddresses / LinkAddress getters", links,
+        add(FieldKeys.DEFAULT_ADDRESSES, "LinkProperties.getLinkAddresses / LinkAddress getters", links,
             sensitive = true) { addresses() }
         add("ipv4.defaultNetworkAddresses", "LinkProperties.getLinkAddresses / LinkAddress getters", links,
             sensitive = true) { addresses().filter { it.family == "IPv4" } }

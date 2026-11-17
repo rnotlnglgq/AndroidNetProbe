@@ -7,7 +7,7 @@ import org.junit.Test
 
 class PresentationTest {
     private fun face(index: Int, name: String, ip: String) = listOf(
-        readField("visibleInterfaces[$index].name", "test") { name },
+        readField("visibleInterfaces[$index].name", "test", sensitive = false) { name },
         readField("visibleInterfaces[$index].addresses", "test", sensitive = true) { listOf(address(ip, "private")) })
     private fun address(ip: String, classification: String) = AddressRecord(ip, if (':' in ip) "IPv6" else "IPv4",
         if (':' in ip) 64 else 24, classification, flagsSource = "test", flagsStatus = FieldStatus.unsupported_api)
@@ -24,7 +24,7 @@ class PresentationTest {
     }
     @Test fun groupsSeparateIndexesAndDoNotIncludeCrossCheckOrCount() {
         val fields = face(10,"eth0","10.1.0.1") + face(2,"wlan0","10.2.0.1") +
-            readField("visibleInterfaces.count", "test") { 2 } + readField("visibleInterfaces.crossCheck","test") { false }
+            readField("visibleInterfaces.count", "test", sensitive = false) { 2 } + readField("visibleInterfaces.crossCheck","test", sensitive = false) { false }
         val groups = Presentation.indexedGroups(fields,"visibleInterfaces","接口")
         assertEquals(listOf("wlan0","eth0"), groups.map { it.title })
         assertTrue(groups.all { it.fields.size == 2 })
@@ -45,11 +45,11 @@ class PresentationTest {
         assertEquals("其他地址", Presentation.addressType(address("hostname.example","other")))
     }
     @Test fun displayConvertsKnownConstantsWithoutChangingRawValues() {
-        val mtu = readField("defaultNetwork.mtu", "LinkProperties.getMtu") { 0 }
+        val mtu = readField("defaultNetwork.mtu", "LinkProperties.getMtu", sensitive = false) { 0 }
         assertEquals("系统默认", Presentation.fieldText(mtu))
         assertEquals(0, mtu.value)
-        assertEquals("LTE", Presentation.fieldText(readField("subscriptions[0].dataNetworkType","test") { 13 }))
-        assertEquals("无服务", Presentation.fieldText(readField("subscriptions[0].serviceState.voiceState","test") { 1 }))
+        assertEquals("LTE", Presentation.fieldText(readField("subscriptions[0].dataNetworkType","test", sensitive = false) { 13 }))
+        assertEquals("无服务", Presentation.fieldText(readField("subscriptions[0].serviceState.voiceState","test", sensitive = false) { 1 }))
         assertEquals("回环", Presentation.addressType(address("::1","other")))
     }
     @Test fun unavailableAndEmptyAreDifferentUserStatesAndOriginalFieldsAreNotChanged() {

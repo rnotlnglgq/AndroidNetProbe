@@ -29,17 +29,17 @@ class ProbeRepository(private val context: Context) {
         val fields = mutableListOf<ProbeField<*>>()
         fields += read.fields
         fun module(name: String, block: () -> List<ProbeField<*>>) {
-            try { fields += block() } catch (e: Exception) {
-                fields += readField<List<ProbeField<*>>>("$name.module", name) { throw e }
+            try { fields += block() } catch (e: java.util.concurrent.CancellationException) { throw e } catch (e: Exception) {
+                fields += readField<List<ProbeField<*>>>("$name.module", name, sensitive = false) { throw e }
             }
         }
         val visible = try { interfaces.collect() } catch (e: Exception) {
-            listOf(readField<String>("visibleInterfaces.module", "InterfaceProbe") { throw e })
+            listOf(readField<String>("visibleInterfaces.module", "InterfaceProbe", sensitive = false) { throw e })
         }
         fields += visible
-        val defaultName = read.fields.firstOrNull { it.path == "defaultNetwork.interfaceName" }?.value as? String
+        val defaultName = read.fields.firstOrNull { it.path == FieldKeys.DEFAULT_INTERFACE }?.value as? String
         val match = visible.firstOrNull { it.path.endsWith(".name") && it.value == defaultName && defaultName != null }
-        val fromLink = (read.fields.firstOrNull { it.path == "defaultNetwork.linkAddresses" }?.value as? List<*>)
+        val fromLink = (read.fields.firstOrNull { it.path == FieldKeys.DEFAULT_ADDRESSES }?.value as? List<*>)
             ?.filterIsInstance<AddressRecord>()?.map { it.address.substringBefore('%') }?.toSet()
         val fromJava = (visible.firstOrNull { it.path == match?.path?.removeSuffix("name") + "addresses" }?.value as? List<*>)
             ?.filterIsInstance<AddressRecord>()?.map { it.address.substringBefore('%') }?.toSet()

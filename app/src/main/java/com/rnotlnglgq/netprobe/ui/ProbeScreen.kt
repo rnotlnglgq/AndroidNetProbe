@@ -29,7 +29,7 @@ fun ProbeScreen(model: ProbeViewModel, onPermissionRequest: (String) -> Unit, on
         "wifi" to "Wi-Fi", "telephony" to "运营商", "subscriptions" to "订阅", "external" to "公网", "properties" to "系统属性", "permissions" to "权限", "device" to "设备")
     val pageState = rememberSaveableStateHolder()
     val fields = model.snapshot?.fieldResults.orEmpty()
-    val defaultInterface = fields.firstOrNull { it.path == "defaultNetwork.interfaceName" }?.value as? String
+    val defaultInterface = fields.firstOrNull { it.path == FieldKeys.DEFAULT_INTERFACE }?.value as? String
     val time = model.snapshot?.capturedAtUtc?.let { runCatching {
         DateTimeFormatter.ofPattern("HH:mm:ss").withZone(ZoneId.systemDefault()).format(Instant.parse(it))
     }.getOrDefault(it) } ?: "等待采样"
@@ -78,17 +78,17 @@ fun ProbeScreen(model: ProbeViewModel, onPermissionRequest: (String) -> Unit, on
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         when (page) {
                             "overview" -> {
-                                val transport = fields.firstOrNull { it.path == "defaultNetwork.transports" }
+                                val transport = fields.firstOrNull { it.path == FieldKeys.DEFAULT_TRANSPORTS }
                                 Panel("当前网络") {
                                     Text(transport?.let { if (it.status == FieldStatus.available) Presentation.text(it.value) else Presentation.status(it.status) } ?: "等待采样", style = MaterialTheme.typography.headlineSmall)
                                     defaultInterface?.let { SummaryRow("接口", it) }
                                 }
-                                fields.filter { it.path in setOf("defaultNetwork.validated", "defaultNetwork.metered", "defaultNetwork.vpn") }
+                                fields.filter { it.path in setOf(FieldKeys.DEFAULT_VALIDATED, FieldKeys.DEFAULT_METERED, FieldKeys.DEFAULT_VPN) }
                                     .forEach { DataFieldCard(it, model.reveal, copied) }
-                                fields.firstOrNull { it.path == "defaultNetwork.linkAddresses" }?.let { DataFieldCard(it, model.reveal, copied) }
+                                fields.firstOrNull { it.path == FieldKeys.DEFAULT_ADDRESSES }?.let { DataFieldCard(it, model.reveal, copied) }
                                 var more by rememberSaveable { mutableStateOf(false) }
                                 TextButton(onClick = { more = !more }) { Text(if (more) "收起网络属性" else "更多网络属性") }
-                                if (more) fields.filter { it.path.startsWith("defaultNetwork.") && it.path !in dnsPaths && it.path !in setOf("defaultNetwork.linkAddresses", "defaultNetwork.validated", "defaultNetwork.metered", "defaultNetwork.vpn", "defaultNetwork.transports") }
+                                if (more) fields.filter { it.path.startsWith("defaultNetwork.") && it.path !in dnsPaths && it.path !in setOf(FieldKeys.DEFAULT_ADDRESSES, FieldKeys.DEFAULT_VALIDATED, FieldKeys.DEFAULT_METERED, FieldKeys.DEFAULT_VPN, FieldKeys.DEFAULT_TRANSPORTS) }
                                     .forEach { DataFieldCard(it, model.reveal, copied) }
                             }
                             "interfaces" -> InterfaceSection(fields.filter { it.path.startsWith("visibleInterfaces") }, defaultInterface, model.reveal, copied)

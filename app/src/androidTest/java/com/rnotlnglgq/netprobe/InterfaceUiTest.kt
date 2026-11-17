@@ -16,9 +16,9 @@ import org.junit.Test
 class InterfaceUiTest {
     @get:Rule val compose = createComposeRule()
     private fun face(index: Int, name: String, ip: String, category: String) = listOf(
-        readField("visibleInterfaces[$index].name", "test") { name },
-        readField("visibleInterfaces[$index].up", "test") { true },
-        readField("visibleInterfaces[$index].mtu", "test") { 1500 },
+        readField("visibleInterfaces[$index].name", "test", sensitive = false) { name },
+        readField("visibleInterfaces[$index].up", "test", sensitive = false) { true },
+        readField("visibleInterfaces[$index].mtu", "test", sensitive = false) { 1500 },
         readField("visibleInterfaces[$index].addresses", "test", sensitive = true) {
             listOf(AddressRecord(ip,"IPv6",64,category,flagsSource="test",flagsStatus=FieldStatus.unsupported_api))
         })

@@ -15,15 +15,15 @@ class PhonePermissionProbe(private val context: Context) {
         val permission = "READ_PHONE_STATE"
         val path = "subscriptions.activeCount"
         if (!enabled) return listOf(unavailable(path, source, FieldStatus.not_requested, permission,
-            "需用户开启订阅实验；即使权限已授予也不会自动采集"))
+            "需用户开启订阅实验；即使权限已授予也不会自动采集", sensitive = false))
         val feature = if (Build.VERSION.SDK_INT >= 33) PackageManager.FEATURE_TELEPHONY_SUBSCRIPTION else PackageManager.FEATURE_TELEPHONY
         if (!context.packageManager.hasSystemFeature(feature)) return listOf(unavailable(path, source,
-            FieldStatus.unsupported_feature, permission, "设备未声明 $feature"))
+            FieldStatus.unsupported_feature, permission, "设备未声明 $feature", sensitive = false))
         if (context.checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED)
-            return listOf(unavailable(path, source, FieldStatus.permission_denied, permission, "用户未授予或已撤回权限"))
+            return listOf(unavailable(path, source, FieldStatus.permission_denied, permission, "用户未授予或已撤回权限", sensitive = false))
         val manager = context.getSystemService(SubscriptionManager::class.java)
         val telephony = context.getSystemService(TelephonyManager::class.java)
-        val subscriptions = readField(path, source, permission) { manager?.activeSubscriptionInfoList }
+        val subscriptions = readField(path, source, permission, sensitive = false) { manager?.activeSubscriptionInfoList }
         val fields = mutableListOf<ProbeField<*>>(ProbeField(path, subscriptions.value?.size,
             subscriptions.status, source, permission, subscriptions.note, subscriptions.errorType, sensitive = true))
         subscriptions.value?.sortedBy { it.simSlotIndex }?.forEachIndexed { index, info ->
@@ -33,7 +33,7 @@ class PhonePermissionProbe(private val context: Context) {
                 fields += readField("$prefix.$name", api, permission, true, note, block).withAcquisition(PhoneAccess.PHONE)
             }
             // Raw subscription IDs remain local and are never serialized; never read ICCID, IMSI or phone number.
-            val perSub = readField("$prefix.manager", "TelephonyManager.createForSubscriptionId", "none") {
+            val perSub = readField("$prefix.manager", "TelephonyManager.createForSubscriptionId", "none", sensitive = false) {
                 telephony?.createForSubscriptionId(info.subscriptionId)
             }
             if (perSub.value == null) {

@@ -14,7 +14,7 @@ class JsonExportTest {
         fieldResults = listOf(readField("defaultNetwork.linkAddresses", "LinkProperties", sensitive = true) {
             listOf(AddressRecord("2001:db8::abc", "IPv6", 64, "global-unicast", flags = 1,
                 flagsSource = "link_address_flags", flagsStatus = FieldStatus.available))
-        }, readField("defaultNetwork.validated", "NetworkCapabilities") { false },
+        }, readField("defaultNetwork.validated", "NetworkCapabilities", sensitive = false) { false },
             unavailable("telephony.sim", "TelephonyManager", FieldStatus.permission_denied, sensitive = true)))
 
     @Test fun cloudflareAndIpv4AddressesAreRemovedFromRedactedExport() {

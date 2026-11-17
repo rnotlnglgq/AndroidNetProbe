@@ -111,8 +111,8 @@ data class PropertyDocument(val capturedAtUtc: String?, val completedAtUtc: Stri
         snapshot.fieldResults.filterNot { it.path.startsWith("systemProperties.") } + fields +
             listOf(timestamp("systemProperties.capturedAtUtc", capturedAtUtc), timestamp("systemProperties.completedAtUtc", completedAtUtc)))
     private fun timestamp(path: String, value: String?): ProbeField<*> = if (value == null)
-        unavailable(path, "SystemPropertyProbe", FieldStatus.not_requested, note = "尚未读取系统属性")
-        else readField(path, "SystemPropertyProbe") { value }
+        unavailable(path, "SystemPropertyProbe", FieldStatus.not_requested, note = "尚未读取系统属性", sensitive = false)
+        else readField(path, "SystemPropertyProbe", sensitive = false) { value }
 }
 
 class SystemPropertyProbe(

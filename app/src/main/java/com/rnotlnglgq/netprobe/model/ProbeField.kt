@@ -14,20 +14,22 @@ data class ProbeField<T>(
     val permission: String = "none",
     val note: String? = null,
     val errorType: String? = null,
-    val sensitive: Boolean = false,
+    val sensitive: Boolean,
     val observedStatus: FieldStatus? = null,
     val acquisitionPermissions: List<String> = emptyList()
 )
 
 fun <T> readField(
     path: String, source: String, permission: String = "none",
-    sensitive: Boolean = false, note: String? = null, block: () -> T?
+    sensitive: Boolean, note: String? = null, block: () -> T?
 ): ProbeField<T> = try {
     val value = block()
     val empty = value == null || value is String && value.isBlank() ||
         value is Collection<*> && value.isEmpty()
     ProbeField(path, value, if (empty) FieldStatus.empty else FieldStatus.available,
         source, permission, note, sensitive = sensitive)
+} catch (e: java.util.concurrent.CancellationException) {
+    throw e
 } catch (e: SecurityException) {
     ProbeField(path, status = FieldStatus.permission_denied, source = source,
         permission = permission, note = "系统拒绝此 API", errorType = e.javaClass.simpleName,
@@ -43,7 +45,7 @@ fun <T> readField(
 
 fun unavailable(
     path: String, source: String, status: FieldStatus, permission: String = "none",
-    note: String? = null, sensitive: Boolean = false
+    note: String? = null, sensitive: Boolean
 ) = ProbeField<Nothing>(path, status = status, source = source, permission = permission,
     note = note, sensitive = sensitive)
 

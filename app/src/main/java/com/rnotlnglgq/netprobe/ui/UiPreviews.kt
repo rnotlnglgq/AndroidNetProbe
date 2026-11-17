@@ -12,13 +12,13 @@ import com.rnotlnglgq.netprobe.ui.theme.NetProbeTheme
 
 // Synthetic local preview fixtures, never used by the running app or exported.
 private val previewInterfaces = listOf(
-    readField("visibleInterfaces[0].name", "NetworkInterface.getName") { "wlan0" },
-    readField("visibleInterfaces[0].up", "NetworkInterface.isUp") { true },
-    readField("visibleInterfaces[0].mtu", "NetworkInterface.getMTU") { 1500 },
+    readField("visibleInterfaces[0].name", "NetworkInterface.getName", sensitive = false) { "wlan0" },
+    readField("visibleInterfaces[0].up", "NetworkInterface.isUp", sensitive = false) { true },
+    readField("visibleInterfaces[0].mtu", "NetworkInterface.getMTU", sensitive = false) { 1500 },
     readField("visibleInterfaces[0].addresses", "NetworkInterface.getInterfaceAddresses", sensitive = true) {
         listOf(AddressRecord("192.168.1.10", "IPv4", 24, "private", flagsSource="NetworkInterface", flagsStatus=FieldStatus.unsupported_api),
             AddressRecord("fe80::1234%wlan0", "IPv6", 64, "link-local", flagsSource="NetworkInterface", flagsStatus=FieldStatus.unsupported_api))
-    }, readField("visibleInterfaces[1].name", "NetworkInterface.getName") { "tun0" })
+    }, readField("visibleInterfaces[1].name", "NetworkInterface.getName", sensitive = false) { "tun0" })
 
 @Preview(name = "接口 · 完整地址", widthDp = 360, heightDp = 760, showBackground = true)
 @Composable

@@ -50,12 +50,12 @@ class BionicInterfaceProbe(private val read: () -> NativeIfResult = BionicBridge
     }
     companion object {
         private const val SOURCE = "Bionic getifaddrs / JNI"
-        fun notRequested() = BionicDocument(null, null, emptyList(), listOf(unavailable("nativeInterfaces.count", SOURCE, FieldStatus.not_requested)))
+        fun notRequested() = BionicDocument(null, null, emptyList(), listOf(unavailable("nativeInterfaces.count", SOURCE, FieldStatus.not_requested, sensitive = false)))
         private fun failed(start: String, status: FieldStatus, error: String, note: String): BionicDocument {
             val done = Instant.now().toString()
             return BionicDocument(start, done, emptyList(), listOf(ProbeField<Int>("nativeInterfaces.count", status=status,
-                source=SOURCE, note=note, errorType=error), readField("nativeInterfaces.capturedAtUtc",SOURCE) { start },
-                readField("nativeInterfaces.completedAtUtc",SOURCE) { done }))
+                source=SOURCE, note=note, errorType=error, sensitive = false), readField("nativeInterfaces.capturedAtUtc",SOURCE, sensitive = false) { start },
+                readField("nativeInterfaces.completedAtUtc",SOURCE, sensitive = false) { done }))
         }
         fun prefixLength(mask: ByteArray?): Int? {
             if (mask == null || mask.size !in listOf(4,16)) return null
@@ -92,15 +92,15 @@ class BionicInterfaceProbe(private val read: () -> NativeIfResult = BionicBridge
             }
             val done = Instant.now().toString()
             val fields = mutableListOf<ProbeField<*>>()
-            fields += readField("nativeInterfaces.count", SOURCE) { interfaces.size }
-            fields += readField("nativeInterfaces.capturedAtUtc", SOURCE) { start }
-            fields += readField("nativeInterfaces.completedAtUtc", SOURCE) { done }
+            fields += readField("nativeInterfaces.count", SOURCE, sensitive = false) { interfaces.size }
+            fields += readField("nativeInterfaces.capturedAtUtc", SOURCE, sensitive = false) { start }
+            fields += readField("nativeInterfaces.completedAtUtc", SOURCE, sensitive = false) { done }
             interfaces.forEachIndexed { i, face ->
                 val path = "nativeInterfaces[$i]"
-                fields += readField("$path.name", "getifaddrs.ifa_name") { face.name }
-                fields += readField("$path.flags", "getifaddrs.ifa_flags", note="接口 IFF_* 标志，不是地址 IFA_F_* 标志") { face.flags }
-                fields += readField("$path.up", "getifaddrs.ifa_flags & IFF_UP") { face.up }
-                fields += readField("$path.loopback", "getifaddrs.ifa_flags & IFF_LOOPBACK") { face.loopback }
+                fields += readField("$path.name", "getifaddrs.ifa_name", sensitive = false) { face.name }
+                fields += readField("$path.flags", "getifaddrs.ifa_flags", note="接口 IFF_* 标志，不是地址 IFA_F_* 标志", sensitive = false) { face.flags }
+                fields += readField("$path.up", "getifaddrs.ifa_flags & IFF_UP", sensitive = false) { face.up }
+                fields += readField("$path.loopback", "getifaddrs.ifa_flags & IFF_LOOPBACK", sensitive = false) { face.loopback }
                 fields += readField("$path.addresses", "getifaddrs.ifa_addr / ifa_netmask", sensitive=true,
                     note="scopeId 是 IPv6 zone 索引；缺失或非连续掩码的 prefixLength=null。未读取 MAC、MTU 或地址 flags/lifetime。") { face.addresses }
             }

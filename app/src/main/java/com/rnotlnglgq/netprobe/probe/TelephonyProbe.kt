@@ -13,9 +13,9 @@ class TelephonyProbe(private val context: Context) {
             val feature = if (Build.VERSION.SDK_INT >= 33) {
                 if (subscription) PackageManager.FEATURE_TELEPHONY_SUBSCRIPTION else PackageManager.FEATURE_TELEPHONY_RADIO_ACCESS
             } else PackageManager.FEATURE_TELEPHONY
-            return if (Build.VERSION.SDK_INT < minApi) unavailable("telephony.$name", api, FieldStatus.unsupported_api, note = "需要 API $minApi")
+            return if (Build.VERSION.SDK_INT < minApi) unavailable("telephony.$name", api, FieldStatus.unsupported_api, note = "需要 API $minApi", sensitive = false)
             else if (manager == null || !context.packageManager.hasSystemFeature(feature))
-                unavailable("telephony.$name", api, FieldStatus.unsupported_feature, note = "设备未声明 $feature")
+                unavailable("telephony.$name", api, FieldStatus.unsupported_feature, note = "设备未声明 $feature", sensitive = false)
             else readField("telephony.$name", api, sensitive = true,
                 note = "空值不代表没有 SIM；默认 TelephonyManager 的订阅选择由系统决定", block = block)
         }
@@ -37,9 +37,9 @@ class TelephonyProbe(private val context: Context) {
         val radio = if (Build.VERSION.SDK_INT >= 33) PackageManager.FEATURE_TELEPHONY_RADIO_ACCESS else PackageManager.FEATURE_TELEPHONY
         val data = if (Build.VERSION.SDK_INT >= 33) PackageManager.FEATURE_TELEPHONY_DATA else PackageManager.FEATURE_TELEPHONY
         val signalFields = if (manager != null && context.packageManager.hasSystemFeature(radio)) RadioSignalProbe.collect("telephony", manager)
-            else listOf(unavailable("telephony.signalStrength.state", "TelephonyManager.getSignalStrength", FieldStatus.unsupported_feature))
+            else listOf(unavailable("telephony.signalStrength.state", "TelephonyManager.getSignalStrength", FieldStatus.unsupported_feature, sensitive = false))
         val dataFields = if (manager != null && context.packageManager.hasSystemFeature(data)) listOf(readField("telephony.dataState", "TelephonyManager.getDataState", sensitive=true) { manager.dataState })
-            else listOf(unavailable("telephony.dataState", "TelephonyManager.getDataState", FieldStatus.unsupported_feature))
+            else listOf(unavailable("telephony.dataState", "TelephonyManager.getDataState", FieldStatus.unsupported_feature, sensitive = false))
         return fields + signalFields + dataFields
     }
 }

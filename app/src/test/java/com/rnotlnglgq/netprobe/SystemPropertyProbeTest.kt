@@ -16,7 +16,7 @@ class SystemPropertyProbeTest {
     }
     private fun snapshot() = NetworkSnapshot(capturedAtUtc="2026-11-12T00:00:00Z", completedAtUtc="2026-11-12T00:00:01Z",
         runId="test", event="test", environment=Environment(35,37,"test","test","1.4"),
-        fieldResults=listOf(readField("defaultNetwork.vpn","test") { false }))
+        fieldResults=listOf(readField("defaultNetwork.vpn","test", sensitive = false) { false }))
 
     @Test fun initialDocumentDoesNotExecuteAndCatalogExcludesUniqueIdentifiers() {
         val initial = SystemPropertyProbe.notRequested()
