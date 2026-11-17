@@ -26,7 +26,7 @@ Android 网络信息可见性探针。用于在自己的设备上查看应用能
 
 结果主要保存在内存，读取开关和端点配置保存在应用私有配置中。JSON 通过系统文件选择器保存，默认遮挡地址和运营商信息；选择云盘时，文件可能由云盘同步。
 
-公网检测由用户确认后执行，接收方会看到出口 IP 和请求时间。自有服务的部署方式见 [服务端说明](server/README.md)。字段结构与人工示例见 [Schema](docs/schema-1.0.json) 和 [samples](samples/)。
+公网检测由用户确认后执行，接收方会看到出口 IP 和请求时间。自有服务的部署方式见 [服务端说明](server/README.md)。字段结构与人工示例见 [Schema](samples/schema-1.0.json) 和 [samples](samples/)。
 
 ## 自行修改
 
@@ -36,4 +36,4 @@ CI 与版本 tag 发布流程见 [维护说明](.github/RELEASING.md)。
 
 ## 许可证
 
-待定。
+本项目采用 [GNU GPL v3.0](LICENSE)（GPL-3.0-only）。

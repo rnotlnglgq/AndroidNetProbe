@@ -40,17 +40,11 @@
 /snapshots/
 /private/
 
-# Development drafts: kept locally until rewritten for publication
+# Development notes and drafts
 /Android_Network_Probe_Agent_Spec.md
 /BUILD_TEST_REPORT.md
 /CHANGELOG.md
-/docs/API_PERMISSION_MATRIX.md
-/docs/ARCHITECTURE.md
-/docs/DATA_SCHEMA.md
-/docs/NATIVE_JNI_RESEARCH.md
-/docs/PRIVACY.md
-/docs/TEST_MATRIX.md
-/docs/drafts/
+/docs/
 
 # Python caches and temporary files
 __pycache__/
