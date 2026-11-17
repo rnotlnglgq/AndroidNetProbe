@@ -1,5 +1,7 @@
 package com.rnotlnglgq.netprobe
 
+import com.rnotlnglgq.netprobe.R
+
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
@@ -17,19 +19,20 @@ import org.junit.Test
 
 /** One-time API33/34/35 smoke checks; not a required per-release emulator matrix. */
 class CompatibilitySmokeTest {
+    private val strings get() = com.rnotlnglgq.netprobe.ui.AndroidUiStrings(androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext.resources)
     @get:Rule val compose = createAndroidComposeRule<MainActivity>()
     private fun tab(text: String) = compose.onNode(hasText(text) and SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Tab))
 
     @Test fun permissionHeadersAndHistoryVersionGate() {
         tab("Wi-Fi").performScrollTo().performClick()
-        compose.onNodeWithText(PermissionLabels.WIFI).performScrollTo().assertIsDisplayed()
-        tab("订阅").performScrollTo().performClick()
-        compose.onAllNodesWithText(PermissionLabels.PHONE).onFirst().performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText("历史记录").performScrollTo().performClick()
+        compose.onNodeWithText(com.rnotlnglgq.netprobe.ui.PermissionLabels(strings).WIFI).performScrollTo().assertIsDisplayed()
+        tab(strings.get(R.string.ui_subscriptions)).performScrollTo().performClick()
+        compose.onAllNodesWithText(com.rnotlnglgq.netprobe.ui.PermissionLabels(strings).PHONE).onFirst().performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText(strings.get(R.string.ui_history)).performScrollTo().performClick()
         if (Build.VERSION.SDK_INT < 34) {
-            compose.onNodeWithText("需要 Android 14 或以上").assertExists()
-            compose.onNodeWithText("读取记录").assertIsNotEnabled()
-        } else compose.onNodeWithText("读取记录").assertExists()
+            compose.onNodeWithText(strings.get(R.string.ui_requires_android_14_or_later)).assertExists()
+            compose.onNodeWithText(strings.get(R.string.ui_read_records)).assertIsNotEnabled()
+        } else compose.onNodeWithText(strings.get(R.string.ui_read_records)).assertExists()
 
         val instrument = InstrumentationRegistry.getInstrumentation()
         val app = instrument.targetContext
@@ -38,6 +41,6 @@ class CompatibilitySmokeTest {
         val history = ProbeRepository(app).captureHistory(true)
         assertEquals(if (Build.VERSION.SDK_INT >= 34) FieldStatus.available else FieldStatus.unsupported_api, history.fields.first().status)
         // The explanatory badge must remain after grant, not only during denial.
-        compose.onAllNodesWithText(PermissionLabels.PHONE).onFirst().assertExists()
+        compose.onAllNodesWithText(com.rnotlnglgq.netprobe.ui.PermissionLabels(strings).PHONE).onFirst().assertExists()
     }
 }

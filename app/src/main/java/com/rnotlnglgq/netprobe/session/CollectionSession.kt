@@ -19,7 +19,7 @@ class CollectionSession(private val scope: CoroutineScope, private val worker: C
     fun leave() { active = false; generation++; tasks.keys.toList().forEach(::cancel); pending = null }
     fun cancel(key: String) {
         if (key == "capture") pending = null
-        tasks[key]?.let { it.cancelResource(); it.job.cancel() }
+        tasks[key]?.let { runCatching(it.cancelResource); it.job.cancel() }
         mutableBusy.value -= key
     }
     fun <T> start(key: String, cancelResource: () -> Unit = {}, work: suspend () -> T,
@@ -35,7 +35,7 @@ class CollectionSession(private val scope: CoroutineScope, private val worker: C
             } catch (e: CancellationException) { throw e }
             catch (e: Exception) { if (active && epoch == generation) failed(e) }
             finally {
-                cancelResource()
+                runCatching(cancelResource)
                 if (tasks[key]?.ticket == ticket) {
                     tasks.remove(key)
                     mutableBusy.value -= key

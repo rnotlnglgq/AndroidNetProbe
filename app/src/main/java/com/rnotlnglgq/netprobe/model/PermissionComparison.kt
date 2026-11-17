@@ -5,7 +5,7 @@ import com.google.gson.Gson
 data class PermissionComparison(
     val experiment: String, val before: NetworkSnapshot, val after: NetworkSnapshot,
     val changedPaths: List<String>,
-    val note: String = "保持网络和设备条件相同；差异可能来自网络变化，不能单凭此次对照归因于权限"
+    val note: String = DiagnosticCatalog.legacy("keep_network_and_device_conditions_steady_differences_may_also_co")
 ) {
     companion object {
         private fun indexed(fields: List<ProbeField<*>>): Map<String, ProbeField<*>> {

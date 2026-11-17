@@ -1,5 +1,7 @@
 package com.rnotlnglgq.netprobe.ui
 
+import com.rnotlnglgq.netprobe.R
+
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -33,56 +35,58 @@ fun copyProbeText(context: Context, label: String, text: String, sensitive: Bool
 
 @Composable
 fun CopyableValue(field: ProbeField<*>, reveal: Boolean, onCopied: (String) -> Unit) {
+    val strings = rememberUiStrings()
+    val presentation = androidx.compose.runtime.remember(strings) { Presentation(strings) }
     val context = LocalContext.current
     val hidden = field.sensitive && !reveal
     if (hidden) {
-        Text("已隐藏")
+        Text(strings.get(R.string.ui_hidden))
         return
     }
     val json = JsonExport.gson.toJson(field.value)
     SelectionContainer {
-        Text(json, fontFamily = FontFamily.Monospace,
+        Text(json, fontFamily = FontFamily.Monospace, style = LocalTextStyle.current.copy(textDirection = androidx.compose.ui.text.style.TextDirection.Ltr),
             modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()))
     }
     Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
         TextButton(onClick = {
             val text = (field.value as? String) ?: json
             copyProbeText(context, field.path, text, field.sensitive)
-            onCopied("已复制")
-        }, enabled = field.value != null) { Text("复制值") }
+            onCopied(strings.get(R.string.ui_copied))
+        }, enabled = field.value != null) { Text(strings.get(R.string.ui_copy_value)) }
         TextButton(onClick = {
             copyProbeText(context, field.path, JsonExport.gson.toJson(field), field.sensitive)
-            onCopied("已复制字段 JSON")
-        }) { Text("复制字段 JSON") }
+            onCopied(strings.get(R.string.ui_field_json_copied))
+        }) { Text(strings.get(R.string.ui_copy_field_json)) }
     }
     val external = field.value as? EndpointResult
     val observedIp = external?.cloudflare?.observedIp ?: external?.reply?.observedIp
     if (observedIp != null) {
-        SelectionContainer { Text("出口 IP：$observedIp", fontFamily = FontFamily.Monospace) }
+        SelectionContainer { Text(strings.get(R.string.ui_public_ip_1_s ,observedIp), fontFamily = FontFamily.Monospace) }
         TextButton(onClick = {
-            copyProbeText(context, "出口 IP", observedIp, true)
-            onCopied("已复制出口 IP")
-        }) { Text("复制出口 IP") }
+            copyProbeText(context, strings.get(R.string.ui_public_ip), observedIp, true)
+            onCopied(strings.get(R.string.ui_public_ip_copied))
+        }) { Text(strings.get(R.string.ui_copy_public_ip)) }
     }
     val addresses = (field.value as? List<*>)?.filterIsInstance<AddressRecord>().orEmpty()
     if (addresses.isNotEmpty()) {
-        Text("地址", style = MaterialTheme.typography.bodySmall)
+        Text(strings.get(R.string.ui_address), style = MaterialTheme.typography.bodySmall)
         addresses.forEach { address ->
             HorizontalDivider(Modifier.padding(vertical = 8.dp))
             SelectionContainer {
-                Text(address.address, fontFamily = FontFamily.Monospace,
+                Text(address.address, fontFamily = FontFamily.Monospace, style = LocalTextStyle.current.copy(textDirection = androidx.compose.ui.text.style.TextDirection.Ltr),
                     modifier = Modifier.horizontalScroll(rememberScrollState()))
             }
-            Text("/${address.prefixLength} · ${address.family} · ${Presentation.addressType(address)}", style = MaterialTheme.typography.bodySmall)
+            Text("/${address.prefixLength} · ${address.family} · ${presentation.addressType(address)}", style = MaterialTheme.typography.bodySmall)
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 TextButton(onClick = {
-                    copyProbeText(context, "IP 地址", address.address, true)
-                    onCopied("已复制 IP 地址")
-                }) { Text("复制地址") }
+                    copyProbeText(context, strings.get(R.string.ui_ip_addresses), address.address, true)
+                    onCopied(strings.get(R.string.ui_ip_address_copied))
+                }) { Text(strings.get(R.string.ui_copy_address)) }
                 TextButton(onClick = {
-                    copyProbeText(context, "IP / 前缀", "${address.address}/${address.prefixLength}", true)
-                    onCopied("已复制地址与前缀")
-                }) { Text("复制 CIDR") }
+                    copyProbeText(context, strings.get(R.string.ui_ip_prefix), "${address.address}/${address.prefixLength}", true)
+                    onCopied(strings.get(R.string.ui_address_and_prefix_copied))
+                }) { Text(strings.get(R.string.ui_copy_cidr)) }
             }
         }
     }

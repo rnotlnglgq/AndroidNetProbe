@@ -18,6 +18,14 @@ class SnapshotStoreTest {
         assertEquals(4,after.fieldResults.size)
         assertTrue(PermissionComparison.between("phone",before,after).changedPaths.isEmpty())
     }
+    @Test fun revokedPermissionsClearBaseAndManualCachesButKeepOrdinaryFields() {
+        val store=SnapshotStore()
+        store.replaceBase(base().copy(fieldResults=base().fieldResults + readField("subscriptions[0].displayName","test",sensitive=true) { "Private SIM" }.withAcquisition("READ_PHONE_STATE")))
+        store.replaceSection(FieldSection.HISTORY,listOf(readField("subscriptionHistory[0].displayName","test",sensitive=true) { "History SIM" }.withAcquisition("READ_PHONE_STATE")))
+        store.invalidatePermissions(emptySet())
+        assertEquals(true,store.snapshot.value!!.fieldResults.first().value)
+        store.snapshot.value!!.fieldResults.drop(1).forEach { assertNull(it.value);assertEquals(FieldStatus.permission_denied,it.status) }
+    }
     @Test fun sectionReplacementAndOwnershipAreChecked() {
         val store=SnapshotStore();store.replaceBase(base())
         store.replaceSection(FieldSection.NATIVE,listOf(readField("nativeInterfaces.count","test", sensitive = false) { 2 }))

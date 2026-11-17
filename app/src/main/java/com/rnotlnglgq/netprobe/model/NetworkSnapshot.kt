@@ -21,7 +21,7 @@ data class AddressRecord(
     val scope: Int? = null, val flags: Int? = null,
     val temporary: Boolean? = null, val deprecated: Boolean? = null,
     val flagsSource: String, val flagsStatus: FieldStatus,
-    val note: String = "地址分类不代表公网可达性；标志位不保证完整"
+    val note: String = DiagnosticCatalog.legacy("address_classification_describes_scope_public_reachability_and_co")
 )
 
 data class RouteRecord(val destination: String, val prefixLength: Int, val gateway: String?,

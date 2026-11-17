@@ -30,7 +30,7 @@ class SubscriptionHistoryTest {
     @Test fun metadataGettersKeepTheirOwnPermissionSeparateFromEnumeration() {
         val fields=record()
         assertTrue(fields.all { it.permission=="none" && it.acquisitionPermissions==listOf("READ_PHONE_STATE") })
-        assertEquals("无有效卡槽",com.rnotlnglgq.netprobe.ui.Presentation.fieldText(fields.first { it.path.endsWith(".slotIndex") }))
+        assertEquals("无有效卡槽",com.rnotlnglgq.netprobe.ui.Presentation(TestStrings.chinese).fieldText(fields.first { it.path.endsWith(".slotIndex") }))
         assertEquals("01",fields.first { it.path.endsWith(".mnc") }.value)
         assertEquals("工作卡-私有标签",fields.first { it.path.endsWith(".displayName") }.value)
         assertTrue(SubscriptionRecordFields.specs.none { it.key in listOf("iccid","number","imsi","groupUuid","cardId") })

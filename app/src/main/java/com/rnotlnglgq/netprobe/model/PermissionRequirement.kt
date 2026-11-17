@@ -19,7 +19,7 @@ sealed interface PermissionRequirement {
 
 object PermissionCatalog {
     private fun atom(name: String) = PermissionRequirement.Permission(name,
-        name in setOf("READ_PHONE_STATE", "ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"))
+        name in setOf("READ_PHONE_STATE", "ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION", "NEARBY_WIFI_DEVICES"))
     private fun all(vararg names: String) = PermissionRequirement.AllOf(names.map(::atom))
     private fun any(vararg names: String) = PermissionRequirement.AnyOf(names.map(::atom))
     private val definitions = mapOf(
@@ -27,7 +27,7 @@ object PermissionCatalog {
         "READ_PHONE_STATE + ACCESS_COARSE_LOCATION" to all("READ_PHONE_STATE","ACCESS_COARSE_LOCATION"),
         "ACCESS_FINE_LOCATION + ACCESS_WIFI_STATE + ACCESS_NETWORK_STATE" to all("ACCESS_FINE_LOCATION","ACCESS_WIFI_STATE","ACCESS_NETWORK_STATE"),
         "ACCESS_FINE_LOCATION + ACCESS_WIFI_STATE" to all("ACCESS_FINE_LOCATION","ACCESS_WIFI_STATE"),
-        "ACCESS_COARSE_LOCATION or ACCESS_FINE_LOCATION (字段可见性)" to any("ACCESS_COARSE_LOCATION","ACCESS_FINE_LOCATION"),
+        DiagnosticCatalog.legacy("access_coarse_location_or_access_fine_location_field_visibility") to any("ACCESS_COARSE_LOCATION","ACCESS_FINE_LOCATION"),
         "ACCESS_COARSE_LOCATION or ACCESS_FINE_LOCATION" to any("ACCESS_COARSE_LOCATION","ACCESS_FINE_LOCATION"),
         "READ_PHONE_STATE or READ_BASIC_PHONE_STATE" to any("READ_PHONE_STATE","READ_BASIC_PHONE_STATE")
     )

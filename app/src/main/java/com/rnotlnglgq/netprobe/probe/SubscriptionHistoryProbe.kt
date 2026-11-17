@@ -16,15 +16,15 @@ data class SubscriptionHistoryDocument(val capturedAtUtc: String?, val completed
         const val SOURCE = "SubscriptionManager.getAllSubscriptionInfoList"
         fun initial(api: Int) = SubscriptionHistoryDocument(null, null, listOf(unavailable("subscriptionHistory.count", SOURCE,
             if (api < 34) FieldStatus.unsupported_api else FieldStatus.not_requested, PhoneAccess.PHONE,
-            if (api < 34) "需要 Android 14 / API 34" else "手动读取系统保留的订阅记录", true)))
+            if (api < 34) DiagnosticCatalog.legacy("requires_android_14_api_34") else DiagnosticCatalog.legacy("manually_read_subscription_records_retained_by_the_system"), true)))
         fun collect(api: Int, enabled: Boolean, feature: Boolean, granted: Boolean,
             read: () -> List<List<ProbeField<*>>>): SubscriptionHistoryDocument {
             val start = Instant.now().toString()
             val count = when {
-                api < 34 -> unavailable("subscriptionHistory.count", SOURCE, FieldStatus.unsupported_api, PhoneAccess.PHONE, "需要 API 34", true)
-                !enabled -> unavailable("subscriptionHistory.count", SOURCE, FieldStatus.not_requested, PhoneAccess.PHONE, "订阅读取已关闭", true)
-                !feature -> unavailable("subscriptionHistory.count", SOURCE, FieldStatus.unsupported_feature, PhoneAccess.PHONE, "设备无订阅功能", true)
-                !granted -> unavailable("subscriptionHistory.count", SOURCE, FieldStatus.permission_denied, PhoneAccess.PHONE, "需要电话权限", true)
+                api < 34 -> unavailable("subscriptionHistory.count", SOURCE, FieldStatus.unsupported_api, PhoneAccess.PHONE, DiagnosticCatalog.legacy("requires_api_34"), true)
+                !enabled -> unavailable("subscriptionHistory.count", SOURCE, FieldStatus.not_requested, PhoneAccess.PHONE, DiagnosticCatalog.legacy("subscription_reading_disabled"), true)
+                !feature -> unavailable("subscriptionHistory.count", SOURCE, FieldStatus.unsupported_feature, PhoneAccess.PHONE, DiagnosticCatalog.legacy("subscription_feature_missing"), true)
+                !granted -> unavailable("subscriptionHistory.count", SOURCE, FieldStatus.permission_denied, PhoneAccess.PHONE, DiagnosticCatalog.legacy("phone_permission_required"), true)
                 else -> null
             }
             val fields = mutableListOf<ProbeField<*>>()

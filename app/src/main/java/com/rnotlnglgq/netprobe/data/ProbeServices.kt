@@ -14,6 +14,8 @@ class ProbeServices(private val app: Application) {
     val repository = ProbeRepository(app)
     val api: Int get() = Build.VERSION.SDK_INT
     fun phoneGranted() = app.checkSelfPermission(Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED
+    fun runtimePermissions(): Set<String> = listOf("READ_PHONE_STATE", "ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION", "NEARBY_WIFI_DEVICES")
+        .filter { app.checkSelfPermission("android.permission.$it") == PackageManager.PERMISSION_GRANTED }.toSet()
     fun observer(callback: (NetworkSample) -> Unit) = NetworkChangeObserver(app,callback)
     fun wifi(callback: () -> Unit) = WifiProbe(app,callback)
     fun properties() = SystemPropertyProbe()

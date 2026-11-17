@@ -23,7 +23,8 @@ class ProbeRepository(private val context: Context) {
     }
 
     @Synchronized
-    fun capture(event: String, sample: NetworkSample? = null, phoneEnabled: Boolean = false, wifiFields: List<ProbeField<*>> = emptyList(), endpointFields: List<ProbeField<*>> = emptyList()): NetworkSnapshot {
+    fun capture(event: String, sample: NetworkSample? = null, phoneEnabled: Boolean = false, wifiFields: List<ProbeField<*>> = emptyList(), endpointFields: List<ProbeField<*>> = emptyList(), shouldRead: () -> Boolean = { true }): NetworkSnapshot {
+        if (!shouldRead()) throw java.util.concurrent.CancellationException("Capture cancelled")
         val start = sample?.capturedAtUtc ?: Instant.now().toString()
         val read = network.collect(sample)
         val fields = mutableListOf<ProbeField<*>>()
@@ -44,7 +45,7 @@ class ProbeRepository(private val context: Context) {
         val fromJava = (visible.firstOrNull { it.path == match?.path?.removeSuffix("name") + "addresses" }?.value as? List<*>)
             ?.filterIsInstance<AddressRecord>()?.map { it.address.substringBefore('%') }?.toSet()
         fields += readField("visibleInterfaces.crossCheck", "LinkProperties vs NetworkInterface address sets", sensitive = true,
-            note = "两者范围不同；不一致不等于采集错误，也不代表存在不可见网络") {
+            note = DiagnosticCatalog.legacy("the_views_have_different_scopes_compare_their_observations_with_n")) {
             if (defaultName == null) null else InterfaceComparison(match != null,
                 if (fromLink != null && fromJava != null) fromLink.intersect(fromJava).size else null,
                 if (fromLink != null && fromJava != null) (fromLink - fromJava).toList() else null,
@@ -58,7 +59,7 @@ class ProbeRepository(private val context: Context) {
         return NetworkSnapshot(capturedAtUtc = start, completedAtUtc = Instant.now().toString(),
             runId = runId, event = event,
             environment = Environment(Build.VERSION.SDK_INT, context.applicationInfo.targetSdkVersion,
-                Build.MANUFACTURER, Build.MODEL, context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "unknown"), fieldResults = fields, warnings = read.warnings + "不同 API 非原子采样；本工具不以单一布尔值判断多来源真实性或完整性")
+                Build.MANUFACTURER, Build.MODEL, context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "unknown"), fieldResults = fields, warnings = read.warnings + DiagnosticCatalog.legacy("apis_are_sampled_at_separate_times_inspect_the_source_observation"))
     }
 }
 

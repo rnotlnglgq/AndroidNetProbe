@@ -24,6 +24,7 @@ android {
     defaultConfig {
         applicationId = "com.rnotlnglgq.netprobe"
         minSdk = 26
+        resourceConfigurations += listOf("en", "b+zh+Hans")
         targetSdk = 37
         versionCode = 9
         versionName = "0.1.0"
@@ -42,6 +43,7 @@ android {
         }
     }
     buildTypes {
+        debug { isPseudoLocalesEnabled = true }
         release {
             isDebuggable = false
             if (releaseSigningFile.exists()) signingConfig = signingConfigs.getByName("researchRelease")
@@ -54,6 +56,8 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    androidResources { generateLocaleConfig = true }
+    testOptions { unitTests.isIncludeAndroidResources = false }
     buildFeatures {
         compose = true
     }
@@ -68,8 +72,8 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7")
-    implementation("com.google.code.gson:gson:2.11.0")
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.gson)
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)

@@ -15,12 +15,12 @@ class PhonePermissionProbe(private val context: Context) {
         val permission = "READ_PHONE_STATE"
         val path = "subscriptions.activeCount"
         if (!enabled) return listOf(unavailable(path, source, FieldStatus.not_requested, permission,
-            "需用户开启订阅实验；即使权限已授予也不会自动采集", sensitive = false))
+            DiagnosticCatalog.legacy("enable_the_subscription_reader_to_collect_these_fields"), sensitive = false))
         val feature = if (Build.VERSION.SDK_INT >= 33) PackageManager.FEATURE_TELEPHONY_SUBSCRIPTION else PackageManager.FEATURE_TELEPHONY
         if (!context.packageManager.hasSystemFeature(feature)) return listOf(unavailable(path, source,
-            FieldStatus.unsupported_feature, permission, "设备未声明 $feature", sensitive = false))
+            FieldStatus.unsupported_feature, permission, DiagnosticCatalog.legacy("device_feature_missing_1_s" ,feature), sensitive = false))
         if (context.checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED)
-            return listOf(unavailable(path, source, FieldStatus.permission_denied, permission, "用户未授予或已撤回权限", sensitive = false))
+            return listOf(unavailable(path, source, FieldStatus.permission_denied, permission, DiagnosticCatalog.legacy("permission_absent_or_revoked"), sensitive = false))
         val manager = context.getSystemService(SubscriptionManager::class.java)
         val telephony = context.getSystemService(TelephonyManager::class.java)
         val subscriptions = readField(path, source, permission, sensitive = false) { manager?.activeSubscriptionInfoList }
@@ -45,10 +45,10 @@ class PhonePermissionProbe(private val context: Context) {
                 add("registeredMccMnc", "TelephonyManager.createForSubscriptionId.getNetworkOperator") { perSub.value.networkOperator }
                 val radioFeature = Build.VERSION.SDK_INT < 33 || context.packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY_RADIO_ACCESS)
                 if (radioFeature) add("dataNetworkType", "TelephonyManager.createForSubscriptionId.getDataNetworkType",
-                    permission = PhoneAccess.dataNetworkType(Build.VERSION.SDK_INT), note = "实际数据承载制式常量；0=UNKNOWN，不等同状态栏 5G 图标；未采集状态栏显示信息") {
+                    permission = PhoneAccess.dataNetworkType(Build.VERSION.SDK_INT), note = DiagnosticCatalog.legacy("data_bearer_technology_0_means_unknown_status_bar_5g_display_is_a")) {
                     perSub.value.dataNetworkType
                 } else fields += unavailable("$prefix.dataNetworkType", "TelephonyManager.getDataNetworkType",
-                    FieldStatus.unsupported_feature, PhoneAccess.dataNetworkType(Build.VERSION.SDK_INT), "缺少 TELEPHONY_RADIO_ACCESS", true).withAcquisition(PhoneAccess.PHONE)
+                    FieldStatus.unsupported_feature, PhoneAccess.dataNetworkType(Build.VERSION.SDK_INT), DiagnosticCatalog.legacy("telephony_radio_access_feature_missing"), true).withAcquisition(PhoneAccess.PHONE)
             }
         }
         return fields

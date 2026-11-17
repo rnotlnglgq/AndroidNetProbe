@@ -1,5 +1,7 @@
 package com.rnotlnglgq.netprobe.ui
 
+import com.rnotlnglgq.netprobe.R
+
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -20,16 +22,17 @@ private val previewInterfaces = listOf(
             AddressRecord("fe80::1234%wlan0", "IPv6", 64, "link-local", flagsSource="NetworkInterface", flagsStatus=FieldStatus.unsupported_api))
     }, readField("visibleInterfaces[1].name", "NetworkInterface.getName", sensitive = false) { "tun0" })
 
-@Preview(name = "接口 · 完整地址", widthDp = 360, heightDp = 760, showBackground = true)
+@Preview(name = "Interfaces", widthDp = 360, heightDp = 760, showBackground = true)
 @Composable
 private fun InterfaceFullPreview() = InterfacePreview(true)
 
-@Preview(name = "接口 · 隐藏地址", widthDp = 360, heightDp = 760, showBackground = true)
+@Preview(name = "Redacted interfaces", widthDp = 360, heightDp = 760, showBackground = true)
 @Composable
 private fun InterfaceHiddenPreview() = InterfacePreview(false)
 
 @Composable
 private fun InterfacePreview(reveal: Boolean) {
+
     NetProbeTheme(dynamicColor = false) {
         Surface { Column(Modifier.verticalScroll(rememberScrollState())) { InterfaceSection(previewInterfaces, "wlan0", reveal) {} } }
     }

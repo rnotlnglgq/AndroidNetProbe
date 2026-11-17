@@ -6,6 +6,7 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class PermissionLabelsTest {
+    private val PermissionLabels = com.rnotlnglgq.netprobe.ui.PermissionLabels(TestStrings.chinese)
     @Test fun ordinaryPermissionsAndUnrestrictedGettersDoNotGetRuntimeBadge() {
         listOf("none","ACCESS_NETWORK_STATE","INTERNET","READ_BASIC_PHONE_STATE").forEach {
             assertNull(PermissionLabels.forField(readField("x","api",it, sensitive = false) { "value" }))

@@ -6,6 +6,7 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class PresentationTest {
+    private val Presentation = com.rnotlnglgq.netprobe.ui.Presentation(TestStrings.chinese)
     private fun face(index: Int, name: String, ip: String) = listOf(
         readField("visibleInterfaces[$index].name", "test", sensitive = false) { name },
         readField("visibleInterfaces[$index].addresses", "test", sensitive = true) { listOf(address(ip, "private")) })

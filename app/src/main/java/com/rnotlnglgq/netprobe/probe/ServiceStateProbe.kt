@@ -14,7 +14,7 @@ class ServiceStateProbe(private val context: Context) {
         fun <T> add(name: String, source: String, minApi: Int = 26, permission: String = "none",
             note: String? = null, block: () -> T?) {
             fields += if (Build.VERSION.SDK_INT < minApi) unavailable("$prefix.$name", source,
-                FieldStatus.unsupported_api, permission, "需要 API $minApi", true)
+                FieldStatus.unsupported_api, permission, DiagnosticCatalog.legacy("requires_api_1_s" ,minApi), true)
             else readField("$prefix.$name", source, permission, true, note, block)
         }
         add("simOperatorName", "TelephonyManager.getSimOperatorName") { tm.simOperatorName }
@@ -32,7 +32,7 @@ class ServiceStateProbe(private val context: Context) {
         val permission = PhoneAccess.SERVICE_STATE
         val hasLocation = context.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
         val state = if (!hasLocation) unavailable("$prefix.serviceState.state", source, FieldStatus.permission_denied,
-            permission, "服务状态需要电话与位置授权；未获取对象，未推断无服务", true)
+            permission, DiagnosticCatalog.legacy("service_state_requires_phone_and_location_permissions_the_service"), true)
         else readField("$prefix.serviceState.state", source, permission, true) { tm.serviceState }
         fields += ProbeField(state.path, state.value?.let { "available" }, state.status, state.source, state.permission, state.note, state.errorType, true)
         val s = state.value
@@ -43,8 +43,8 @@ class ServiceStateProbe(private val context: Context) {
         }
         fun <T> service(name: String, api: String, minApi: Int = 26, note: String? = null, block: () -> T?) =
             add("serviceState.$name", api, minApi, PhoneAccess.serviceField(name), note, block)
-        service("voiceState", "ServiceState.getState", note = "语音服务状态：0 IN_SERVICE / 1 OUT_OF_SERVICE / 2 EMERGENCY_ONLY / 3 POWER_OFF；不等同数据注册状态") { s.state }
-        service("operatorNumeric", "ServiceState.getOperatorNumeric", note = "空值可来自未注册、未知或位置脱敏；无法仅凭 null 区分") { s.operatorNumeric }
+        service("voiceState", "ServiceState.getState", note = DiagnosticCatalog.legacy("voice_state_0_in_service_1_out_of_service_2_emergency_only_3_powe")) { s.state }
+        service("operatorNumeric", "ServiceState.getOperatorNumeric", note = DiagnosticCatalog.legacy("null_may_reflect_registration_state_unknown_data_or_system_locati")) { s.operatorNumeric }
         service("operatorAlphaLong", "ServiceState.getOperatorAlphaLong") { s.operatorAlphaLong }
         service("operatorAlphaShort", "ServiceState.getOperatorAlphaShort") { s.operatorAlphaShort }
         service("roaming", "ServiceState.getRoaming") { s.roaming }
@@ -53,7 +53,7 @@ class ServiceStateProbe(private val context: Context) {
         service("cellBandwidthsKhz", "ServiceState.getCellBandwidths", 28) { if (Build.VERSION.SDK_INT >= 28) s.cellBandwidths.toList() else null }
         service("duplexMode", "ServiceState.getDuplexMode", 28) { if (Build.VERSION.SDK_INT >= 28) s.duplexMode else null }
         service("registrations", "ServiceState.getNetworkRegistrationInfoList / NetworkRegistrationInfo getters", 30,
-            "按 CS/PS 域与 WWAN/WLAN 传输分别记录；PLMN 可能为最后尝试注册的网络，需结合 registered；没有读取 CellIdentity") {
+            DiagnosticCatalog.legacy("records_cs_ps_and_wwan_wlan_separately_plmn_may_be_the_last_attem")) {
             if (Build.VERSION.SDK_INT >= 30) s.networkRegistrationInfoList.map { r ->
                 RegistrationView(r.domain, r.transportType, r.accessNetworkTechnology, r.registeredPlmn,
                     if (Build.VERSION.SDK_INT >= 34) r.isNetworkRegistered else r.isRegistered,

@@ -17,7 +17,9 @@ data class ProbeField<T>(
     val sensitive: Boolean,
     val observedStatus: FieldStatus? = null,
     val acquisitionPermissions: List<String> = emptyList()
-)
+) {
+    val diagnostic: Diagnostic? get() = note?.let(DiagnosticCatalog::fromLegacy)
+}
 
 fun <T> readField(
     path: String, source: String, permission: String = "none",
@@ -32,15 +34,15 @@ fun <T> readField(
     throw e
 } catch (e: SecurityException) {
     ProbeField(path, status = FieldStatus.permission_denied, source = source,
-        permission = permission, note = "系统拒绝此 API", errorType = e.javaClass.simpleName,
+        permission = permission, note = DiagnosticCatalog.legacy("system_denied_this_api"), errorType = e.javaClass.simpleName,
         sensitive = sensitive)
 } catch (e: UnsupportedOperationException) {
     ProbeField(path, status = FieldStatus.unsupported_feature, source = source, permission = permission,
-        note = "系统不支持此操作", errorType = e.javaClass.simpleName, sensitive = sensitive)
+        note = DiagnosticCatalog.legacy("operation_unsupported_by_the_system"), errorType = e.javaClass.simpleName, sensitive = sensitive)
 } catch (e: Exception) {
     // Messages can contain private data: retain only the exception type.
     ProbeField(path, status = FieldStatus.error, source = source, permission = permission,
-        note = "API 调用失败", errorType = e.javaClass.simpleName, sensitive = sensitive)
+        note = DiagnosticCatalog.legacy("api_call_failed"), errorType = e.javaClass.simpleName, sensitive = sensitive)
 }
 
 fun unavailable(

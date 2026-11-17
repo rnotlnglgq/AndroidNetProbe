@@ -42,21 +42,21 @@ class NetworkSnapshotProbe(context: Context) {
             if (sample != null) sample.links else network?.let { manager.getLinkProperties(it) }
         }
         fun <T> add(path: String, source: String, dependency: ProbeField<*>? = null,
-            minApi: Int = 26, sensitive: Boolean = false, note: String? = null, block: () -> T?) {
+            minApi: Int = 26, sensitive: Boolean, note: String? = null, block: () -> T?) {
             fields += when {
                 Build.VERSION.SDK_INT < minApi -> unavailable(path, source, FieldStatus.unsupported_api,
-                    permission, "需要 API $minApi", sensitive)
+                    permission, DiagnosticCatalog.legacy("requires_api_1_s" ,minApi), sensitive)
                 network == null -> unavailable(path, source,
                     if (active.status == FieldStatus.empty) FieldStatus.network_unavailable else active.status,
-                    permission, "当前默认网络不可见或不存在", sensitive)
+                    permission, DiagnosticCatalog.legacy("the_current_default_network_is_absent_or_invisible"), sensitive)
                 dependency != null && dependency.value == null -> unavailable(path, source,
                     if (dependency.status == FieldStatus.empty) FieldStatus.network_unavailable else dependency.status,
-                    permission, "网络属性暂不可用，可能正在切换", sensitive)
+                    permission, DiagnosticCatalog.legacy("network_properties_are_temporarily_unavailable_possibly_during_a"), sensitive)
                 else -> readField(path, source, permission, sensitive, note, block)
             }
         }
-        add("defaultNetwork.sessionNetworkId", "session_random_uuid") { network?.let { sessionId(it) } }
-        add(FieldKeys.DEFAULT_TRANSPORTS, "NetworkCapabilities.hasTransport", caps) {
+        add("defaultNetwork.sessionNetworkId", "session_random_uuid", sensitive = false) { network?.let { sessionId(it) } }
+        add(FieldKeys.DEFAULT_TRANSPORTS, "NetworkCapabilities.hasTransport", caps, sensitive = false) {
             val choices = mutableListOf(
                 NetworkCapabilities.TRANSPORT_WIFI to "WIFI", NetworkCapabilities.TRANSPORT_CELLULAR to "CELLULAR",
                 NetworkCapabilities.TRANSPORT_VPN to "VPN", NetworkCapabilities.TRANSPORT_ETHERNET to "ETHERNET",
@@ -67,37 +67,37 @@ class NetworkSnapshotProbe(context: Context) {
             if (Build.VERSION.SDK_INT >= 35) choices += NetworkCapabilities.TRANSPORT_SATELLITE to "SATELLITE"
             choices.filter { caps.value!!.hasTransport(it.first) }.map { it.second }
         }
-        add(FieldKeys.DEFAULT_VALIDATED, "NetworkCapabilities.hasCapability(VALIDATED)", caps) {
+        add(FieldKeys.DEFAULT_VALIDATED, "NetworkCapabilities.hasCapability(VALIDATED)", caps, sensitive = false) {
             caps.value!!.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
         }
-        add("defaultNetwork.internetCapability", "NetworkCapabilities.hasCapability(INTERNET)", caps) {
+        add("defaultNetwork.internetCapability", "NetworkCapabilities.hasCapability(INTERNET)", caps, sensitive = false) {
             caps.value!!.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
         }
-        add(FieldKeys.DEFAULT_METERED, "NetworkCapabilities.hasCapability(NOT_METERED)", caps) {
+        add(FieldKeys.DEFAULT_METERED, "NetworkCapabilities.hasCapability(NOT_METERED)", caps, sensitive = false) {
             !caps.value!!.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED)
         }
         add(FieldKeys.DEFAULT_VPN, "NetworkCapabilities.hasTransport(VPN)", caps,
-            note = "仅描述 App 默认网络；未主动枚举 VPN 底层网络") {
+            note = DiagnosticCatalog.legacy("describes_the_app_default_network_underlying_vpn_networks_are_out"), sensitive = false) {
             caps.value!!.hasTransport(NetworkCapabilities.TRANSPORT_VPN)
         }
         add("defaultNetwork.downstreamKbps", "NetworkCapabilities.getLinkDownstreamBandwidthKbps", caps,
-            note = "系统估计的第一跳带宽，非测速结果") { caps.value!!.linkDownstreamBandwidthKbps }
+            note = DiagnosticCatalog.legacy("system_estimate_of_first_hop_bandwidth"), sensitive = false) { caps.value!!.linkDownstreamBandwidthKbps }
         add("defaultNetwork.upstreamKbps", "NetworkCapabilities.getLinkUpstreamBandwidthKbps", caps,
-            note = "系统估计的第一跳带宽，非测速结果") { caps.value!!.linkUpstreamBandwidthKbps }
+            note = DiagnosticCatalog.legacy("system_estimate_of_first_hop_bandwidth"), sensitive = false) { caps.value!!.linkUpstreamBandwidthKbps }
         add("defaultNetwork.signalStrength", "NetworkCapabilities.getSignalStrength", caps, 29,
-            note = "单位随传输类型变化；系统未提供时为空") {
+            note = DiagnosticCatalog.legacy("signal_units_depend_on_the_transport_empty_when_the_system_suppli"), sensitive = false) {
             if (Build.VERSION.SDK_INT >= 29) caps.value!!.signalStrength.takeUnless { it == Int.MIN_VALUE } else null
         }
-        add("defaultNetwork.captivePortal", "NetworkCapabilities.hasCapability(CAPTIVE_PORTAL)", caps) {
+        add("defaultNetwork.captivePortal", "NetworkCapabilities.hasCapability(CAPTIVE_PORTAL)", caps, sensitive = false) {
             caps.value!!.hasCapability(NetworkCapabilities.NET_CAPABILITY_CAPTIVE_PORTAL)
         }
-        add("defaultNetwork.notRestricted", "NetworkCapabilities.hasCapability(NOT_RESTRICTED)", caps) {
+        add("defaultNetwork.notRestricted", "NetworkCapabilities.hasCapability(NOT_RESTRICTED)", caps, sensitive = false) {
             caps.value!!.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_RESTRICTED)
         }
-        add("defaultNetwork.notSuspended", "NetworkCapabilities.hasCapability(NOT_SUSPENDED)", caps, 28) {
+        add("defaultNetwork.notSuspended", "NetworkCapabilities.hasCapability(NOT_SUSPENDED)", caps, 28, sensitive = false) {
             if (Build.VERSION.SDK_INT >= 28) caps.value!!.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_SUSPENDED) else null
         }
-        add(FieldKeys.DEFAULT_INTERFACE, "LinkProperties.getInterfaceName", links) { links.value!!.interfaceName }
+        add(FieldKeys.DEFAULT_INTERFACE, "LinkProperties.getInterfaceName", links, sensitive = false) { links.value!!.interfaceName }
         fun addresses() = links.value!!.linkAddresses.map { link ->
             AddressRecord(link.address.hostAddress ?: "", if (link.address.address.size == 16) "IPv6" else "IPv4",
                 link.prefixLength, IpClassifier.classify(link.address), link.scope, link.flags,
@@ -114,14 +114,14 @@ class NetworkSnapshotProbe(context: Context) {
             links.value!!.dnsServers.map { it.hostAddress }
         }
         add("defaultNetwork.routes", "LinkProperties.getRoutes / RouteInfo getters", links, sensitive = true,
-            note = "RouteInfo.type 需要 API 33；低版本为 null") {
+            note = DiagnosticCatalog.legacy("routeinfo_type_requires_api_33_null_on_earlier_versions")) {
             links.value!!.routes.map { r -> RouteRecord(r.destination.address.hostAddress ?: "",
                 r.destination.prefixLength, r.gateway?.hostAddress, r.`interface`,
                 if (Build.VERSION.SDK_INT >= 33) r.type else null) }
         }
         add("defaultNetwork.mtu", "LinkProperties.getMtu", links, 29,
-            note = "0 表示未设置非默认 MTU，不代表实际链路 MTU 为零") { if (Build.VERSION.SDK_INT >= 29) links.value!!.mtu else null }
-        add("defaultNetwork.privateDns.active", "LinkProperties.isPrivateDnsActive", links, 28) { if (Build.VERSION.SDK_INT >= 28) links.value!!.isPrivateDnsActive else null }
+            note = DiagnosticCatalog.legacy("zero_means_a_custom_mtu_is_unset_the_actual_link_mtu_is_a_separat"), sensitive = false) { if (Build.VERSION.SDK_INT >= 29) links.value!!.mtu else null }
+        add("defaultNetwork.privateDns.active", "LinkProperties.isPrivateDnsActive", links, 28, sensitive = false) { if (Build.VERSION.SDK_INT >= 28) links.value!!.isPrivateDnsActive else null }
         add("defaultNetwork.privateDns.serverName", "LinkProperties.getPrivateDnsServerName", links, 28,
             sensitive = true) { if (Build.VERSION.SDK_INT >= 28) links.value!!.privateDnsServerName else null }
         add("defaultNetwork.nat64Prefix", "LinkProperties.getNat64Prefix", links, 30, sensitive = true) {
@@ -129,10 +129,10 @@ class NetworkSnapshotProbe(context: Context) {
         }
         add("defaultNetwork.dnsSearchDomains", "LinkProperties.getDomains", links, sensitive = true) { links.value!!.domains }
         add("defaultNetwork.httpProxy", "LinkProperties.getHttpProxy / ProxyInfo getters", links, sensitive = true,
-            note = "仅显示代理配置，不访问 PAC URL") {
+            note = DiagnosticCatalog.legacy("proxy_configuration_only_the_pac_url_is_kept_as_data")) {
             links.value!!.httpProxy?.let { ProxyRecord(it.host, it.port, it.exclusionList.toList(), it.pacFileUrl?.toString()) }
         }
-        if (sample != null) warnings += "回调参数为同一默认网络的最近属性；接口和运营商在事件之后采样，不保证跨 API 原子性"
+        if (sample != null) warnings += DiagnosticCatalog.legacy("latest_callback_properties_for_the_same_default_network_interface")
         return NetworkRead(fields, warnings)
     }
 }

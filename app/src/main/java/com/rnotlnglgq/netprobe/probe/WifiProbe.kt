@@ -32,14 +32,14 @@ class WifiProbe(private val context: Context, private val onChange: () -> Unit) 
             lm.isProviderEnabled(LocationManager.GPS_PROVIDER) || lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     }
     private fun gate(enabled: Boolean): ProbeField<*>? = when {
-        !enabled -> unavailable("wifi.state", source, FieldStatus.not_requested, permission, "尚未主动开启 Wi-Fi 权限实验", sensitive = false)
+        !enabled -> unavailable("wifi.state", source, FieldStatus.not_requested, permission, DiagnosticCatalog.legacy("wi_fi_reader_disabled"), sensitive = false)
         !context.packageManager.hasSystemFeature(PackageManager.FEATURE_WIFI) -> unavailable("wifi.state", source,
-            FieldStatus.unsupported_feature, permission, "设备无 Wi-Fi feature", sensitive = false)
+            FieldStatus.unsupported_feature, permission, DiagnosticCatalog.legacy("wi_fi_feature_missing"), sensitive = false)
         Build.VERSION.SDK_INT < 31 -> unavailable("wifi.state", source, FieldStatus.unsupported_api, permission,
-            "此可选实验仅实现 API 31+ 的位置敏感回调；P0 正常可用", sensitive = false)
+            DiagnosticCatalog.legacy("location_sensitive_wi_fi_callbacks_require_api_31_basic_network_r"), sensitive = false)
         context.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ->
-            unavailable("wifi.state", source, FieldStatus.permission_denied, permission, "未授予精确位置或权限已撤回；仅模糊位置不足", sensitive = false)
-        !locationEnabled() -> unavailable("wifi.state", source, FieldStatus.not_requested, permission, "location_disabled：位置总开关关闭", sensitive = false)
+            unavailable("wifi.state", source, FieldStatus.permission_denied, permission, DiagnosticCatalog.legacy("precise_location_permission_absent_or_revoked"), sensitive = false)
+        !locationEnabled() -> unavailable("wifi.state", source, FieldStatus.not_requested, permission, DiagnosticCatalog.legacy("location_disabled_system_location_is_off"), sensitive = false)
         else -> null
     }
 
@@ -86,13 +86,13 @@ class WifiProbe(private val context: Context, private val onChange: () -> Unit) 
             unavailable("wifi.bssid", source, blocked.status, permission, blocked.note, true))
         val observation = latest
         fields += readField("wifi.observedAtUtc", source, permission,
-            note = "最近一次前台 Wi-Fi 回调，不保证与默认网络快照同一时刻或属于同一网络；VPN 下可能是底层 Wi-Fi", sensitive = false) { observation?.capturedAtUtc }
+            note = DiagnosticCatalog.legacy("latest_foreground_wi_fi_callback_it_can_differ_in_time_or_network"), sensitive = false) { observation?.capturedAtUtc }
         fun value(name: String, text: String?, sentinel: Boolean): ProbeField<*> =
             if (sentinel) unavailable("wifi.$name", source, FieldStatus.redacted, permission,
-                "system_redacted：系统未暴露真实值", true)
+                DiagnosticCatalog.legacy("system_redacted_system_withheld_the_actual_value"), true)
             else readField("wifi.$name", source, permission, true) { text }
         fields += readField("wifi.rssiDbm", source, permission, sensitive = false) { observation?.rssiDbm }
-        fields += readField("wifi.linkSpeedMbps", source, permission, note = "连接速率由系统报告，非实际吞吐量；-1 表示未知", sensitive = false) { observation?.linkSpeedMbps }
+        fields += readField("wifi.linkSpeedMbps", source, permission, note = DiagnosticCatalog.legacy("system_reported_link_speed_1_means_unknown_throughput_is_a_separa"), sensitive = false) { observation?.linkSpeedMbps }
         fields += readField("wifi.frequencyMhz", source, permission, sensitive = false) { observation?.frequencyMhz }
         fields += readField("wifi.standard", "WifiInfo.getWifiStandard", permission, sensitive = false) { observation?.wifiStandard }
         fields += readField("wifi.txLinkSpeedMbps", "WifiInfo.getTxLinkSpeedMbps", permission, sensitive = false) { observation?.txMbps?.takeUnless { it == -1 } }

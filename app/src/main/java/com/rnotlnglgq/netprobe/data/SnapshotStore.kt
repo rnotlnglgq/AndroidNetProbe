@@ -17,6 +17,14 @@ class SnapshotStore {
         sections[section] = fields.toList()
         publish()
     }
+    fun invalidatePermissions(granted: Set<String>) {
+        fun clear(field: ProbeField<*>): ProbeField<*> =
+            if (PermissionCatalog.forField(field).runtimeAlternatives().any { granted.containsAll(it) }) field
+            else field.copy(value = null, status = FieldStatus.permission_denied, observedStatus = null)
+        base = base?.let { it.copy(fieldResults = it.fieldResults.map(::clear)) }
+        sections.keys.toList().forEach { key -> sections[key] = sections.getValue(key).map(::clear) }
+        publish()
+    }
     private fun publish() {
         val current = base ?: return
         val fields = current.fieldResults.filterNot { field -> sections.keys.any { it.owns(field.path) } } + sections.values.flatten()

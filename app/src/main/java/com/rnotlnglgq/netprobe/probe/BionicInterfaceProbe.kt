@@ -43,10 +43,10 @@ class BionicInterfaceProbe(private val read: () -> NativeIfResult = BionicBridge
     fun capture(): BionicDocument {
         val start = Instant.now().toString()
         return try { fromResult(read(), start) }
-        catch (e: LinkageError) { failed(start, FieldStatus.unsupported_feature, e.javaClass.simpleName, "Native 库不可用") }
-        catch (e: SecurityException) { failed(start, FieldStatus.permission_denied, e.javaClass.simpleName, "系统拒绝读取") }
+        catch (e: LinkageError) { failed(start, FieldStatus.unsupported_feature, e.javaClass.simpleName, DiagnosticCatalog.legacy("native_library_unavailable")) }
+        catch (e: SecurityException) { failed(start, FieldStatus.permission_denied, e.javaClass.simpleName, DiagnosticCatalog.legacy("system_denied_reading")) }
         catch (e: CancellationException) { throw e }
-        catch (e: Exception) { failed(start, FieldStatus.error, e.javaClass.simpleName, "Native 读取失败") }
+        catch (e: Exception) { failed(start, FieldStatus.error, e.javaClass.simpleName, DiagnosticCatalog.legacy("native_read_failed")) }
     }
     companion object {
         private const val SOURCE = "Bionic getifaddrs / JNI"
@@ -69,7 +69,7 @@ class BionicInterfaceProbe(private val read: () -> NativeIfResult = BionicBridge
         }
         fun fromResult(result: NativeIfResult, start: String): BionicDocument {
             if (result.errno != 0) return failed(start, if (result.errno == 1 || result.errno == 13) FieldStatus.permission_denied else FieldStatus.error,
-                "errno_${result.errno}", "getifaddrs 返回 errno ${result.errno}")
+                "errno_${result.errno}", DiagnosticCatalog.legacy("getifaddrs_returned_errno_1_s" ,result.errno))
             val entries = requireNotNull(result.entries) { "Missing native array" }
             require(entries.size <= 512)
             val grouped = entries.groupBy { entry ->
@@ -98,11 +98,11 @@ class BionicInterfaceProbe(private val read: () -> NativeIfResult = BionicBridge
             interfaces.forEachIndexed { i, face ->
                 val path = "nativeInterfaces[$i]"
                 fields += readField("$path.name", "getifaddrs.ifa_name", sensitive = false) { face.name }
-                fields += readField("$path.flags", "getifaddrs.ifa_flags", note="接口 IFF_* 标志，不是地址 IFA_F_* 标志", sensitive = false) { face.flags }
+                fields += readField("$path.flags", "getifaddrs.ifa_flags", note=DiagnosticCatalog.legacy("interface_iff_flags_address_ifa_f_flags_are_separate"), sensitive = false) { face.flags }
                 fields += readField("$path.up", "getifaddrs.ifa_flags & IFF_UP", sensitive = false) { face.up }
                 fields += readField("$path.loopback", "getifaddrs.ifa_flags & IFF_LOOPBACK", sensitive = false) { face.loopback }
                 fields += readField("$path.addresses", "getifaddrs.ifa_addr / ifa_netmask", sensitive=true,
-                    note="scopeId 是 IPv6 zone 索引；缺失或非连续掩码的 prefixLength=null。未读取 MAC、MTU 或地址 flags/lifetime。") { face.addresses }
+                    note=DiagnosticCatalog.legacy("scopeid_is_the_ipv6_zone_index_missing_or_non_contiguous_masks_yi")) { face.addresses }
             }
             return BionicDocument(start, done, interfaces, fields)
         }

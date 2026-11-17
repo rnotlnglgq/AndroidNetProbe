@@ -1,5 +1,7 @@
 package com.rnotlnglgq.netprobe.ui
 
+import com.rnotlnglgq.netprobe.R
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
@@ -9,13 +11,13 @@ import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.rnotlnglgq.netprobe.model.*
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import kotlinx.coroutines.launch
 
 @Composable
 fun ProbeScreen(model: ProbeViewModel, onPermissionRequest: (String) -> Unit, onSettings: () -> Unit, onExport: (Boolean) -> Unit) {
+    val strings = rememberUiStrings()
+    val presentation = androidx.compose.runtime.remember(strings) { Presentation(strings) }
+    val permissionLabels = androidx.compose.runtime.remember(strings) { PermissionLabels(strings) }
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val copied: (String) -> Unit = { message -> scope.launch { snackbar.currentSnackbarData?.dismiss(); snackbar.showSnackbar(message) } }
@@ -25,17 +27,17 @@ fun ProbeScreen(model: ProbeViewModel, onPermissionRequest: (String) -> Unit, on
     var exporting by remember { mutableStateOf(false) }
     var menu by remember { mutableStateOf(false) }
     var page by rememberSaveable { mutableStateOf("overview") }
-    val tabs = linkedMapOf("overview" to "概览", "interfaces" to "接口", "native" to "Native 接口", "addresses" to "IP 地址", "dns" to "DNS 与路由",
-        "wifi" to "Wi-Fi", "telephony" to "运营商", "subscriptions" to "订阅", "external" to "公网", "properties" to "系统属性", "permissions" to "权限", "device" to "设备")
+    val tabs = linkedMapOf("overview" to strings.get(R.string.ui_overview), "interfaces" to strings.get(R.string.ui_interfaces), "native" to strings.get(R.string.ui_native_interfaces), "addresses" to strings.get(R.string.ui_ip_addresses), "dns" to strings.get(R.string.ui_dns_and_routes),
+        "wifi" to "Wi-Fi", "telephony" to strings.get(R.string.ui_carrier), "subscriptions" to strings.get(R.string.ui_subscriptions), "external" to strings.get(R.string.ui_public_network), "properties" to strings.get(R.string.ui_system_properties), "permissions" to strings.get(R.string.ui_permissions), "device" to strings.get(R.string.ui_device))
     val pageState = rememberSaveableStateHolder()
     val uiState by model.state.collectAsState()
     val fields = uiState.snapshot?.fieldResults.orEmpty()
     val defaultInterface = fields.firstOrNull { it.path == FieldKeys.DEFAULT_INTERFACE }?.value as? String
     val time = model.snapshot?.capturedAtUtc?.let { runCatching {
-        DateTimeFormatter.ofPattern("HH:mm:ss").withZone(ZoneId.systemDefault()).format(Instant.parse(it))
-    }.getOrDefault(it) } ?: "等待采样"
+        strings.time(it)
+    }.getOrDefault(it) } ?: strings.get(R.string.ui_waiting_for_a_sample)
     LaunchedEffect(model.foreground) { if (!model.foreground) jsonPreview = null }
-    LaunchedEffect(model.message) { if (model.message.isNotEmpty()) copied(model.message) }
+    LaunchedEffect(model.message?.id) { model.message?.let { copied(strings.resolve(it.text)); model.consumeMessage(it.id) } }
     jsonPreview?.let { JsonViewer(it, onDismiss = { jsonPreview = null }, onCopied = {}) }
     if (endpointConfig) EndpointScreen(model, onDismiss = { endpointConfig = false })
     if (permissions) PermissionScreen(model, onDismiss = { permissions = false }, onRequest = onPermissionRequest, onSettings = onSettings)
@@ -46,25 +48,25 @@ fun ProbeScreen(model: ProbeViewModel, onPermissionRequest: (String) -> Unit, on
                 Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), horizontalArrangement = Arrangement.SpaceBetween) {
                     Column(Modifier.weight(1f).padding(vertical = 8.dp)) {
                         Text("NetProbe", style = MaterialTheme.typography.titleLarge)
-                        Text("${if (model.registered) "监测中" else "已暂停"} · $time", style = MaterialTheme.typography.bodySmall)
+                        Text("${if (model.registered) strings.get(R.string.ui_monitoring) else strings.get(R.string.ui_paused)} · ${time}", style = MaterialTheme.typography.bodySmall)
                     }
-                    TextButton(onClick = { model.reveal = !model.reveal }) { Text(if (model.reveal) "隐藏完整值" else "显示完整值") }
+                    TextButton(onClick = { model.reveal = !model.reveal }) { Text(if (model.reveal) strings.get(R.string.ui_hide_full_values) else strings.get(R.string.ui_show_full_values)) }
                     Box {
-                        TextButton(onClick = { menu = true }) { Text("更多") }
+                        TextButton(onClick = { menu = true }) { Text(strings.get(R.string.ui_more)) }
                         DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
-                            DropdownMenuItem(text = { Text("查看 / 复制 JSON") }, enabled = model.snapshot != null,
+                            DropdownMenuItem(text = { Text(strings.get(R.string.ui_view_copy_json)) }, enabled = model.snapshot != null,
                                 onClick = { menu = false; model.snapshot?.let { jsonPreview = JsonPreview.of(it, model.events, model.comparison) } })
-                            DropdownMenuItem(text = { Text("导出 JSON") }, enabled = model.snapshot != null, onClick = { menu = false; exporting = true })
-                            DropdownMenuItem(text = { Text("权限与对照") }, onClick = { menu = false; permissions = true })
-                            DropdownMenuItem(text = { Text("公网检测") }, onClick = { menu = false; endpointConfig = true })
+                            DropdownMenuItem(text = { Text(strings.get(R.string.ui_export_json)) }, enabled = model.snapshot != null, onClick = { menu = false; exporting = true })
+                            DropdownMenuItem(text = { Text(strings.get(R.string.ui_permissions_and_comparison)) }, onClick = { menu = false; permissions = true })
+                            DropdownMenuItem(text = { Text(strings.get(R.string.ui_public_checks)) }, onClick = { menu = false; endpointConfig = true })
                         }
                     }
                 }
                 Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp)) {
                     TextButton(onClick = { when (page) { "properties" -> model.readSystemProperties(); "native" -> model.readNativeInterfaces(); else -> model.refresh() } },
-                        enabled = when (page) { "properties" -> !model.propertiesBusy; "native" -> !model.nativeBusy; else -> !model.busy }) { Text("刷新") }
-                    TextButton(onClick = model::toggleMonitoring) { Text(if (model.monitoring) "暂停监测" else "继续监测") }
-                    if (model.externalBusy) Text("公网检测中…", modifier = Modifier.padding(12.dp), style = MaterialTheme.typography.bodySmall)
+                        enabled = when (page) { "properties" -> !model.propertiesBusy; "native" -> !model.nativeBusy; else -> !model.busy }) { Text(strings.get(R.string.ui_refresh)) }
+                    TextButton(onClick = model::toggleMonitoring) { Text(if (model.monitoring) strings.get(R.string.ui_pause_monitoring) else strings.get(R.string.ui_resume_monitoring)) }
+                    if (model.externalBusy) Text(strings.get(R.string.ui_checking_public_network), modifier = Modifier.padding(12.dp), style = MaterialTheme.typography.bodySmall)
                 }
                 ScrollableTabRow(selectedTabIndex = tabs.keys.indexOf(page).coerceAtLeast(0), edgePadding = 8.dp) {
                     tabs.forEach { (key, label) -> Tab(selected = page == key, onClick = { page = key }, text = { Text(label) }) }
@@ -80,15 +82,15 @@ fun ProbeScreen(model: ProbeViewModel, onPermissionRequest: (String) -> Unit, on
                         when (page) {
                             "overview" -> {
                                 val transport = fields.firstOrNull { it.path == FieldKeys.DEFAULT_TRANSPORTS }
-                                Panel("当前网络") {
-                                    Text(transport?.let { if (it.status == FieldStatus.available) Presentation.text(it.value) else Presentation.status(it.status) } ?: "等待采样", style = MaterialTheme.typography.headlineSmall)
-                                    defaultInterface?.let { SummaryRow("接口", it) }
+                                Panel(strings.get(R.string.ui_current_network)) {
+                                    Text(transport?.let { if (it.status == FieldStatus.available) presentation.text(it.value) else presentation.status(it.status) } ?: strings.get(R.string.ui_waiting_for_a_sample), style = MaterialTheme.typography.headlineSmall)
+                                    defaultInterface?.let { SummaryRow(strings.get(R.string.ui_interfaces), it) }
                                 }
                                 fields.filter { it.path in setOf(FieldKeys.DEFAULT_VALIDATED, FieldKeys.DEFAULT_METERED, FieldKeys.DEFAULT_VPN) }
                                     .forEach { DataFieldCard(it, model.reveal, copied) }
                                 fields.firstOrNull { it.path == FieldKeys.DEFAULT_ADDRESSES }?.let { DataFieldCard(it, model.reveal, copied) }
                                 var more by rememberSaveable { mutableStateOf(false) }
-                                TextButton(onClick = { more = !more }) { Text(if (more) "收起网络属性" else "更多网络属性") }
+                                TextButton(onClick = { more = !more }) { Text(if (more) strings.get(R.string.ui_collapse_network_properties) else strings.get(R.string.ui_more_network_properties)) }
                                 if (more) fields.filter { it.path.startsWith("defaultNetwork.") && it.path !in dnsPaths && it.path !in setOf(FieldKeys.DEFAULT_ADDRESSES, FieldKeys.DEFAULT_VALIDATED, FieldKeys.DEFAULT_METERED, FieldKeys.DEFAULT_VPN, FieldKeys.DEFAULT_TRANSPORTS) }
                                     .forEach { DataFieldCard(it, model.reveal, copied) }
                             }
@@ -99,11 +101,11 @@ fun ProbeScreen(model: ProbeViewModel, onPermissionRequest: (String) -> Unit, on
                                 var family by rememberSaveable { mutableIntStateOf(0) }
                                 ItemTabs(listOf("IPv4", "IPv6"), family) { family = it }
                                 fields.firstOrNull { it.path == "${if (family == 0) "ipv4" else "ipv6"}.defaultNetworkAddresses" }
-                                    ?.let { DataFieldCard(it, model.reveal, copied) } ?: Text("等待采样")
+                                    ?.let { DataFieldCard(it, model.reveal, copied) } ?: Text(strings.get(R.string.ui_waiting_for_a_sample))
                             }
                             "dns" -> {
                                 var section by rememberSaveable { mutableIntStateOf(0) }
-                                ItemTabs(listOf("DNS", "路由", "代理"), section) { section = it }
+                                ItemTabs(listOf("DNS", strings.get(R.string.ui_routes), strings.get(R.string.ui_proxy)), section) { section = it }
                                 fields.filter { when (section) {
                                     1 -> it.path == "defaultNetwork.routes"
                                     2 -> it.path == "defaultNetwork.httpProxy"
@@ -111,55 +113,55 @@ fun ProbeScreen(model: ProbeViewModel, onPermissionRequest: (String) -> Unit, on
                                 } }.forEach { DataFieldCard(it, model.reveal, copied) }
                             }
                             "wifi" -> {
-                                Panel("Wi-Fi 读取", PermissionLabels.WIFI) {
-                                    Row { Text("读取连接信息", Modifier.weight(1f)); Switch(model.wifiExperiment, { model.setExperiment("wifi", it) }) }
+                                Panel(strings.get(R.string.ui_wi_fi_reading), permissionLabels.WIFI) {
+                                    Row { Text(strings.get(R.string.ui_read_connection_information), Modifier.weight(1f)); Switch(model.wifiExperiment, { model.setExperiment("wifi", it) }) }
                                     if (fields.any { it.path.startsWith("wifi.") && it.status == FieldStatus.permission_denied }) {
-                                        Text("需要精确位置权限")
-                                        Button(onClick = { if (model.beginExperiment("wifi")) onPermissionRequest("wifi") }) { Text("授权") }
+                                        Text(strings.get(R.string.ui_precise_location_permission_required))
+                                        Button(onClick = { if (model.beginExperiment("wifi")) onPermissionRequest("wifi") }) { Text(strings.get(R.string.ui_grant_permission)) }
                                     }
-                                    if (fields.any { it.path == "wifi.locationEnabled" && it.value == false }) Text("请打开系统位置开关")
-                                    TextButton(onClick = onSettings) { Text("应用权限设置") }
+                                    if (fields.any { it.path == "wifi.locationEnabled" && it.value == false }) Text(strings.get(R.string.ui_turn_on_system_location))
+                                    TextButton(onClick = onSettings) { Text(strings.get(R.string.ui_app_permission_settings)) }
                                 }
                                 fields.filter { it.path.startsWith("wifi.") }.forEach { DataFieldCard(it, model.reveal, copied) }
                             }
                             "telephony" -> fields.filter { it.path.startsWith("telephony.") }.forEach { DataFieldCard(it, model.reveal, copied) }
                             "subscriptions" -> {
-                                Panel("订阅读取", PermissionLabels.PHONE) {
-                                    Row { Text("读取 SIM 与服务状态", Modifier.weight(1f)); Switch(model.phoneExperiment, { model.setExperiment("phone", it) }) }
-                                    TextButton(onClick = { permissions = true }) { Text("授权与对照") }
+                                Panel(strings.get(R.string.ui_subscription_reading), permissionLabels.PHONE) {
+                                    Row { Text(strings.get(R.string.ui_read_sim_and_service_state), Modifier.weight(1f)); Switch(model.phoneExperiment, { model.setExperiment("phone", it) }) }
+                                    TextButton(onClick = { permissions = true }) { Text(strings.get(R.string.ui_permissions_and_comparison_a13e9a)) }
                                 }
                                 var section by rememberSaveable { mutableIntStateOf(0) }
-                                ItemTabs(listOf("当前订阅", "历史记录"), section) { section = it }
+                                ItemTabs(listOf(strings.get(R.string.ui_current_subscriptions), strings.get(R.string.ui_history)), section) { section = it }
                                 if (section == 0) CurrentSubscriptionsSection(fields, model.reveal, copied)
                                 else SubscriptionHistorySection(model.historyDocument, model.historyBusy, model.phoneExperiment,
                                     model.reveal, model::readSubscriptionHistory, { permissions = true }, copied)
 
                             }
                             "external" -> {
-                                Button(onClick = { endpointConfig = true }, enabled = !model.externalBusy) { Text("公网 / Cloudflare") }
+                                Button(onClick = { endpointConfig = true }, enabled = !model.externalBusy) { Text(strings.get(R.string.ui_public_network_cloudflare)) }
                                 fields.filter { it.path.startsWith("externalChecks.") && !it.path.endsWith(".state") }.forEach { DataFieldCard(it, model.reveal, copied) }
-                                if (fields.none { it.path.startsWith("externalChecks.") && it.path.endsWith(".result") }) Text("尚未检测")
+                                if (fields.none { it.path.startsWith("externalChecks.") && it.path.endsWith(".result") }) Text(strings.get(R.string.ui_not_checked_yet))
                             }
                             "properties" -> SystemPropertiesSection(model.propertyDocument, model.propertiesBusy,
                                 model.reveal, model::readSystemProperties, copied)
                             "permissions" -> {
-                                Button(onClick = { permissions = true }) { Text("权限与对照") }
+                                Button(onClick = { permissions = true }) { Text(strings.get(R.string.ui_permissions_and_comparison)) }
                                 fields.filter { it.path.startsWith("permissions.") }.forEach { DataFieldCard(it, model.reveal, copied) }
                             }
                             "device" -> {
                                 model.snapshot?.let { snapshot ->
-                                    Panel("设备") {
-                                        SummaryRow("型号", "${snapshot.environment.manufacturer} ${snapshot.environment.model}")
+                                    Panel(strings.get(R.string.ui_device)) {
+                                        SummaryRow(strings.get(R.string.ui_model), "${snapshot.environment.manufacturer} ${snapshot.environment.model}")
                                         SummaryRow("Android API", snapshot.environment.androidApi.toString())
-                                        SummaryRow("应用版本", snapshot.environment.appVersion)
+                                        SummaryRow(strings.get(R.string.ui_app_version), snapshot.environment.appVersion)
                                     }
                                     var details by rememberSaveable { mutableStateOf(false) }
-                                    TextButton(onClick = { details = !details }) { Text(if (details) "收起采样记录" else "采样记录") }
-                                    if (details) Panel("采样记录") {
-                                        SummaryRow("采样时间", snapshot.capturedAtUtc)
-                                        SummaryRow("完成时间", snapshot.completedAtUtc)
+                                    TextButton(onClick = { details = !details }) { Text(if (details) strings.get(R.string.ui_collapse_sample_history) else strings.get(R.string.ui_sample_history)) }
+                                    if (details) Panel(strings.get(R.string.ui_sample_history)) {
+                                        SummaryRow(strings.get(R.string.ui_sample_time), snapshot.capturedAtUtc)
+                                        SummaryRow(strings.get(R.string.ui_completion_time), snapshot.completedAtUtc)
                                         SummaryRow("target SDK", snapshot.environment.targetSdk.toString())
-                                        snapshot.warnings.forEach { Text(it, style = MaterialTheme.typography.bodySmall) }
+                                        snapshot.warnings.forEach { Text(strings.legacy(it), style = MaterialTheme.typography.bodySmall) }
                                         model.events.takeLast(10).forEach { Text("${it.capturedAtUtc} · ${it.event}", style = MaterialTheme.typography.bodySmall) }
                                     }
                                 }

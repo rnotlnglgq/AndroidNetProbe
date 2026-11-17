@@ -1,5 +1,7 @@
 package com.rnotlnglgq.netprobe.ui
 
+import com.rnotlnglgq.netprobe.R
+
 import android.net.Uri
 import java.util.concurrent.atomic.AtomicReference
 import androidx.compose.runtime.*
@@ -39,7 +41,10 @@ class ProbeViewModel(private val services: ProbeServices) : ViewModel() {
     var comparison by mutableStateOf<PermissionComparison?>(null); private set
     var events by mutableStateOf<List<NetworkEvent>>(emptyList()); private set
     var reveal by mutableStateOf(false)
-    var message by mutableStateOf("")
+    private var messageId = 0L
+    var message by mutableStateOf<UiMessage?>(null); private set
+    private fun notify(text: UiText) { message = UiMessage(++messageId,text) }
+    fun consumeMessage(id: Long) { if (message?.id == id) message = null }
     private var externalResults = emptyList<EndpointResult>()
     private var baseline: NetworkSnapshot? = null
     private var experimentKind = ""
@@ -60,7 +65,8 @@ class ProbeViewModel(private val services: ProbeServices) : ViewModel() {
     fun enterForeground() {
         foreground = true
         session.enter()
-        if (!services.phoneGranted()) {
+        snapshots.invalidatePermissions(services.runtimePermissions())
+        if (historyDocument.capturedAtUtc != null && !services.phoneGranted()) {
             historyDocument = SubscriptionHistoryDocument.collect(services.api,phoneExperiment,true,false) { emptyList() }
             snapshots.replaceSection(FieldSection.HISTORY,historyDocument.fields)
         }
@@ -69,24 +75,24 @@ class ProbeViewModel(private val services: ProbeServices) : ViewModel() {
     }
     fun leaveForeground() {
         foreground = false
-        if (externalBusy) message = "已取消公网检测"
+        if (externalBusy) notify(UiText.resource(R.string.ui_public_checks_cancelled))
         session.leave()
         stopWifi(); stopObserver(); reveal = false
     }
     private fun startObserver() {
         try { observer.start(); registered = observer.isRegistered }
-        catch (e: Exception) { registered = false; message = "监测注册失败：${e.javaClass.simpleName}" }
+        catch (e: Exception) { registered = false; notify(UiText.resource(R.string.ui_monitor_registration_failed_1_s ,e.javaClass.simpleName)) }
     }
     private fun stopObserver() {
         try { observer.stop() }
-        catch (e: Exception) { message = "监测注销结果：${e.javaClass.simpleName}" }
+        catch (e: Exception) { notify(UiText.resource(R.string.ui_monitor_stopped_1_s ,e.javaClass.simpleName)) }
         finally { registered = false }
     }
     private fun startWifi() {
-        try { wifi.start(wifiExperiment) } catch (e: Exception) { message = "Wi-Fi 实验注册：${e.javaClass.simpleName}" }
+        try { wifi.start(wifiExperiment) } catch (e: Exception) { notify(UiText.resource(R.string.ui_wi_fi_observer_registration_1_s ,e.javaClass.simpleName)) }
     }
     private fun stopWifi() {
-        try { wifi.stop() } catch (e: Exception) { message = "Wi-Fi 实验注销：${e.javaClass.simpleName}" }
+        try { wifi.stop() } catch (e: Exception) { notify(UiText.resource(R.string.ui_wi_fi_observer_stopped_1_s ,e.javaClass.simpleName)) }
     }
     fun toggleMonitoring() {
         monitoring = !monitoring
@@ -102,7 +108,8 @@ class ProbeViewModel(private val services: ProbeServices) : ViewModel() {
                 val wifiEnabled = wifiExperiment
                 val external = externalResults
                 val result = withContext(Dispatchers.IO) {
-                    services.repository.capture(event,sample,enabled,wifi.collect(wifiEnabled),externalFields(external))
+                    val job = currentCoroutineContext()[Job]
+                    services.repository.capture(event,sample,enabled,wifi.collect(wifiEnabled),externalFields(external)) { job?.isActive == true }
                 }
                 currentCoroutineContext().ensureActive()
                 snapshots.replaceBase(result)
@@ -112,7 +119,7 @@ class ProbeViewModel(private val services: ProbeServices) : ViewModel() {
                 }
                 event(result.event,result.capturedAtUtc)
             } catch (e: CancellationException) { throw e }
-            catch (e: Exception) { message = "采样失败：${e.javaClass.simpleName}" }
+            catch (e: Exception) { notify(UiText.resource(R.string.ui_sampling_failed_1_s ,e.javaClass.simpleName)) }
         }
     }
     fun readSubscriptionHistory() {
@@ -124,14 +131,14 @@ class ProbeViewModel(private val services: ProbeServices) : ViewModel() {
             historyDocument = it
             snapshots.replaceSection(FieldSection.HISTORY,it.fields)
             event("subscription_history_read",it.completedAtUtc.orEmpty())
-        },failed = { message = "订阅记录读取失败：${it.javaClass.simpleName}" })
+        },failed = { notify(UiText.resource(R.string.ui_subscription_history_read_failed_1_s ,it.javaClass.simpleName)) })
     }
     fun readNativeInterfaces() {
         session.start("native",work = { services.native().capture() },commit = {
             nativeDocument = it
             snapshots.replaceSection(FieldSection.NATIVE,it.fields)
             event("bionic_interfaces_read",it.completedAtUtc.orEmpty())
-        },failed = { message = "Native 读取失败：${it.javaClass.simpleName}" })
+        },failed = { notify(UiText.resource(R.string.ui_native_read_failed_1_s ,it.javaClass.simpleName)) })
     }
     fun readSystemProperties() {
         val probe = services.properties()
@@ -139,8 +146,8 @@ class ProbeViewModel(private val services: ProbeServices) : ViewModel() {
             propertyDocument = it
             snapshots.replaceSection(FieldSection.PROPERTIES,it.fields)
             event("system_properties_read",it.completedAtUtc.orEmpty())
-            message = "系统属性已读取"
-        },failed = { message = "系统属性读取失败：${it.javaClass.simpleName}" })
+            notify(UiText.resource(R.string.ui_system_properties_read))
+        },failed = { notify(UiText.resource(R.string.ui_system_property_read_failed_1_s ,it.javaClass.simpleName)) })
     }
     fun prepareExport(raw: Boolean): Boolean {
         val current = snapshot ?: return false
@@ -149,11 +156,11 @@ class ProbeViewModel(private val services: ProbeServices) : ViewModel() {
     }
     fun writeExport(uri: Uri?) {
         val document = pendingExport; pendingExport = null
-        if (uri == null) { message = "已取消导出"; return }
-        if (document == null) { message = "请重新选择导出"; return }
+        if (uri == null) { notify(UiText.resource(R.string.ui_export_cancelled)); return }
+        if (document == null) { notify(UiText.resource(R.string.ui_please_select_export_again)); return }
         viewModelScope.launch {
             val result = withContext(Dispatchers.IO) { runCatching { services.write(uri,document) } }
-            message = result.fold({ "导出完成" }, { "导出失败：${it.javaClass.simpleName}" })
+            notify(result.fold({ UiText.resource(R.string.ui_export_complete) }, { UiText.resource(R.string.ui_export_failed_1_s ,it.javaClass.simpleName) }))
         }
     }
     fun setExperiment(kind: String, enabled: Boolean) {
@@ -184,6 +191,7 @@ class ProbeViewModel(private val services: ProbeServices) : ViewModel() {
         return true
     }
     fun permissionsReturned() {
+        snapshots.invalidatePermissions(services.runtimePermissions())
         compareAfterResult = true; stopWifi()
         if (foreground && monitoring) startWifi()
         refresh("permission_result")
@@ -193,14 +201,14 @@ class ProbeViewModel(private val services: ProbeServices) : ViewModel() {
     fun saveEndpoints(ipv4: String, ipv6: String) {
         endpointIpv4=ipv4; endpointIpv6=ipv6
         preferences.edit().putString("ipv4",ipv4).putString("ipv6",ipv6).apply()
-        message = "服务器地址已保存"
+        notify(UiText.resource(R.string.ui_server_addresses_saved))
     }
     fun runCloudflare() = runExternal(true)
     fun runExternal(cloudflare: Boolean = false) {
         val configs = if (cloudflare) listOf("IPv4","IPv6").map { EndpointConfig(CloudflareTrace.ENDPOINT,it,"cloudflare_trace") }
             else listOf(EndpointConfig(endpointIpv4,"IPv4"),EndpointConfig(endpointIpv6,"IPv6"))
         if (configs.any { !EndpointPolicy.valid(it) } || !cloudflare && EndpointPolicy.parse(configs[0]).host == EndpointPolicy.parse(configs[1]).host) {
-            message = "请填写两个不同的 HTTPS 域名"; return
+            notify(UiText.resource(R.string.ui_enter_two_different_https_hostnames)); return
         }
         val holder = AtomicReference<AndroidEndpointTransport?>(null)
         session.start("external",cancelResource = { holder.get()?.cancel() },work = {
@@ -209,9 +217,9 @@ class ProbeViewModel(private val services: ProbeServices) : ViewModel() {
             finally { transport.cancel(); holder.set(null) }
         },commit = {
             externalResults = it
-            message = it.joinToString { result -> "${result.expectedFamily}：${Presentation.endpointState(result.state)}" }
+            notify(UiText.resource(R.string.ui_public_checks_complete))
             refresh("external_results")
-        },failed = { message = "公网检测失败：${it.javaClass.simpleName}" })
+        },failed = { notify(UiText.resource(R.string.ui_public_check_failed_1_s ,it.javaClass.simpleName)) })
     }
     override fun onCleared() { session.leave(); stopObserver(); stopWifi() }
 }

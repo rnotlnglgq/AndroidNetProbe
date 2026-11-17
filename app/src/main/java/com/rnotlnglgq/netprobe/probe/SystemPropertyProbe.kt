@@ -13,35 +13,35 @@ data class PropertySpec(val key: String, val title: String, val group: String, v
 
 object PropertyCatalog {
     val entries = listOf(
-        PropertySpec("ro.product.manufacturer", "厂商", "system", false),
-        PropertySpec("ro.product.brand", "品牌", "system", false),
-        PropertySpec("ro.product.model", "型号", "system", false),
-        PropertySpec("ro.product.device", "设备代号", "system", false),
+        PropertySpec("ro.product.manufacturer", DiagnosticCatalog.legacy("manufacturer"), "system", false),
+        PropertySpec("ro.product.brand", DiagnosticCatalog.legacy("brand"), "system", false),
+        PropertySpec("ro.product.model", DiagnosticCatalog.legacy("model"), "system", false),
+        PropertySpec("ro.product.device", DiagnosticCatalog.legacy("device_codename"), "system", false),
         PropertySpec("ro.product.cpu.abilist", "CPU ABI", "system", false),
-        PropertySpec("ro.build.version.release", "Android 版本", "system", false),
+        PropertySpec("ro.build.version.release", DiagnosticCatalog.legacy("android_version"), "system", false),
         PropertySpec("ro.build.version.sdk", "Android API", "system", false),
-        PropertySpec("ro.build.version.security_patch", "安全补丁", "system", false),
-        PropertySpec("ro.build.version.incremental", "系统构建版本", "system", false),
-        PropertySpec("ro.build.type", "构建类型", "system", false),
-        PropertySpec("ro.build.tags", "构建标签", "system", false),
-        PropertySpec("gsm.operator.alpha", "注册运营商名称", "carrier", true),
-        PropertySpec("gsm.operator.numeric", "注册 MCC/MNC", "carrier", true),
-        PropertySpec("gsm.operator.iso-country", "网络国家", "carrier", true),
-        PropertySpec("gsm.operator.isroaming", "漫游属性", "carrier", true),
-        PropertySpec("gsm.sim.operator.alpha", "SIM 运营商名称", "carrier", true),
+        PropertySpec("ro.build.version.security_patch", DiagnosticCatalog.legacy("security_patch"), "system", false),
+        PropertySpec("ro.build.version.incremental", DiagnosticCatalog.legacy("system_build_version"), "system", false),
+        PropertySpec("ro.build.type", DiagnosticCatalog.legacy("build_type"), "system", false),
+        PropertySpec("ro.build.tags", DiagnosticCatalog.legacy("build_tags"), "system", false),
+        PropertySpec("gsm.operator.alpha", DiagnosticCatalog.legacy("registered_carrier_name"), "carrier", true),
+        PropertySpec("gsm.operator.numeric", DiagnosticCatalog.legacy("registered_mcc_mnc"), "carrier", true),
+        PropertySpec("gsm.operator.iso-country", DiagnosticCatalog.legacy("network_country"), "carrier", true),
+        PropertySpec("gsm.operator.isroaming", DiagnosticCatalog.legacy("roaming_property"), "carrier", true),
+        PropertySpec("gsm.sim.operator.alpha", DiagnosticCatalog.legacy("sim_carrier_name"), "carrier", true),
         PropertySpec("gsm.sim.operator.numeric", "SIM MCC/MNC", "carrier", true),
-        PropertySpec("gsm.sim.operator.iso-country", "SIM 国家", "carrier", true),
-        PropertySpec("gsm.sim.state", "SIM 状态属性", "carrier", true),
-        PropertySpec("gsm.network.type", "网络制式属性", "carrier", true),
-        PropertySpec("gsm.version.baseband", "基带版本", "carrier", true),
-        PropertySpec("persist.radio.multisim.config", "多 SIM 配置", "carrier", true),
-        PropertySpec("ro.telephony.default_network", "默认网络制式配置", "carrier", true),
-        PropertySpec("wifi.interface", "Wi-Fi 接口属性", "network", true),
-        PropertySpec("net.dns1", "DNS 属性 1", "network", true),
-        PropertySpec("net.dns2", "DNS 属性 2", "network", true),
-        PropertySpec("net.dns3", "DNS 属性 3", "network", true),
-        PropertySpec("net.dns4", "DNS 属性 4", "network", true),
-        PropertySpec("net.tcp.default_init_rwnd", "TCP 初始接收窗口配置", "network", true)
+        PropertySpec("gsm.sim.operator.iso-country", DiagnosticCatalog.legacy("sim_country"), "carrier", true),
+        PropertySpec("gsm.sim.state", DiagnosticCatalog.legacy("sim_state_property"), "carrier", true),
+        PropertySpec("gsm.network.type", DiagnosticCatalog.legacy("network_technology_property"), "carrier", true),
+        PropertySpec("gsm.version.baseband", DiagnosticCatalog.legacy("baseband_version"), "carrier", true),
+        PropertySpec("persist.radio.multisim.config", DiagnosticCatalog.legacy("multi_sim_configuration"), "carrier", true),
+        PropertySpec("ro.telephony.default_network", DiagnosticCatalog.legacy("default_network_technology_configuration"), "carrier", true),
+        PropertySpec("wifi.interface", DiagnosticCatalog.legacy("wi_fi_interface_property"), "network", true),
+        PropertySpec("net.dns1", DiagnosticCatalog.legacy("dns_property_1"), "network", true),
+        PropertySpec("net.dns2", DiagnosticCatalog.legacy("dns_property_2"), "network", true),
+        PropertySpec("net.dns3", DiagnosticCatalog.legacy("dns_property_3"), "network", true),
+        PropertySpec("net.dns4", DiagnosticCatalog.legacy("dns_property_4"), "network", true),
+        PropertySpec("net.tcp.default_init_rwnd", DiagnosticCatalog.legacy("tcp_initial_receive_window_configuration"), "network", true)
     )
     fun path(spec: PropertySpec) = "systemProperties.values.${spec.key}"
     fun requireKnown(key: String) { require(entries.any { it.key == key }) { "Unknown property key" } }
@@ -111,7 +111,7 @@ data class PropertyDocument(val capturedAtUtc: String?, val completedAtUtc: Stri
         snapshot.fieldResults.filterNot { it.path.startsWith("systemProperties.") } + fields +
             listOf(timestamp("systemProperties.capturedAtUtc", capturedAtUtc), timestamp("systemProperties.completedAtUtc", completedAtUtc)))
     private fun timestamp(path: String, value: String?): ProbeField<*> = if (value == null)
-        unavailable(path, "SystemPropertyProbe", FieldStatus.not_requested, note = "尚未读取系统属性", sensitive = false)
+        unavailable(path, "SystemPropertyProbe", FieldStatus.not_requested, note = DiagnosticCatalog.legacy("system_properties_await_a_read"), sensitive = false)
         else readField(path, "SystemPropertyProbe", sensitive = false) { value }
 }
 
@@ -127,32 +127,32 @@ class SystemPropertyProbe(
         val fields = PropertyCatalog.entries.map { spec ->
             if (cancelled.get() || Thread.currentThread().isInterrupted) throw CancellationException("Property read cancelled")
             val remaining = TimeUnit.NANOSECONDS.toMillis(deadline - nanoTime())
-            if (remaining <= 0) field(spec, status = FieldStatus.error, note = "本次读取已超时", errorType = "CollectionTimeout")
+            if (remaining <= 0) field(spec, status = FieldStatus.error, note = DiagnosticCatalog.legacy("this_read_timed_out"), errorType = "CollectionTimeout")
             else try { convert(spec, runner.query(spec.key, minOf(750L, remaining))) }
             catch (e: CancellationException) { throw e }
-            catch (e: SecurityException) { field(spec, status = FieldStatus.permission_denied, note = "系统拒绝执行 getprop", errorType = e.javaClass.simpleName) }
-            catch (e: Exception) { field(spec, status = FieldStatus.error, note = "getprop 启动或读取失败", errorType = e.javaClass.simpleName) }
+            catch (e: SecurityException) { field(spec, status = FieldStatus.permission_denied, note = DiagnosticCatalog.legacy("system_denied_getprop_execution"), errorType = e.javaClass.simpleName) }
+            catch (e: Exception) { field(spec, status = FieldStatus.error, note = DiagnosticCatalog.legacy("getprop_start_or_read_failed"), errorType = e.javaClass.simpleName) }
         }
         if (cancelled.get()) throw CancellationException("Property read cancelled")
         return PropertyDocument(start, Instant.now().toString(), fields)
     }
     companion object {
         fun notRequested() = PropertyDocument(null, null, PropertyCatalog.entries.map {
-            field(it, status = FieldStatus.not_requested, note = "点击系统属性页的读取按钮")
+            field(it, status = FieldStatus.not_requested, note = DiagnosticCatalog.legacy("use_the_read_button_in_system_properties"))
         })
         private fun field(spec: PropertySpec, value: String? = null, status: FieldStatus,
             note: String? = null, errorType: String? = null) = ProbeField(PropertyCatalog.path(spec), value, status,
             "/system/bin/getprop ${spec.key} (ProcessBuilder)", "none", note, errorType, spec.sensitive)
         fun convert(spec: PropertySpec, result: PropertyCommandResult): ProbeField<String> = when {
-            result.permissionDenied -> field(spec, status = FieldStatus.permission_denied, note = "系统明确拒绝读取", errorType = "PropertyAccessDenied")
-            result.timedOut -> field(spec, status = FieldStatus.error, note = "读取超时", errorType = "PropertyTimeout")
-            result.outputTooLarge -> field(spec, status = FieldStatus.error, note = "输出超过大小限制", errorType = "PropertyOutputLimit")
+            result.permissionDenied -> field(spec, status = FieldStatus.permission_denied, note = DiagnosticCatalog.legacy("system_explicitly_denied_reading"), errorType = "PropertyAccessDenied")
+            result.timedOut -> field(spec, status = FieldStatus.error, note = DiagnosticCatalog.legacy("read_timed_out"), errorType = "PropertyTimeout")
+            result.outputTooLarge -> field(spec, status = FieldStatus.error, note = DiagnosticCatalog.legacy("output_exceeded_the_size_limit"), errorType = "PropertyOutputLimit")
             result.exitCode != 0 || result.hasDiagnostics -> field(spec, status = FieldStatus.error,
-                note = "getprop 返回异常（退出码 ${result.exitCode}）", errorType = "GetpropCommandError")
+                note = DiagnosticCatalog.legacy("getprop_failed_exit_code_1_s" ,result.exitCode), errorType = "GetpropCommandError")
             result.value.isNullOrEmpty() -> field(spec, status = FieldStatus.empty,
-                note = "空值、未设置和被系统隐藏无法仅凭此结果区分；不代表属性不存在")
+                note = DiagnosticCatalog.legacy("empty_unset_and_system_hidden_values_share_this_result"))
             else -> field(spec, result.value, FieldStatus.available,
-                note = "应用进程权限下读取；属性并非稳定 SDK 契约，可能过时或含逗号列表，不自动对应订阅/当前网络")
+                note = DiagnosticCatalog.legacy("read_under_app_process_permissions_properties_may_be_stale_or_con"))
         }
     }
 }

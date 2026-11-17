@@ -7,7 +7,7 @@ import java.util.Collections
 class InterfaceProbe {
     fun collect(): List<ProbeField<*>> {
         val all = readField("visibleInterfaces.enumeration", "NetworkInterface.getNetworkInterfaces",
-            note = "仅为当前 App 可访问接口；与默认网络 LinkProperties 范围不同。不读取 MAC 地址", sensitive = false) {
+            note = DiagnosticCatalog.legacy("interfaces_accessible_to_this_app_scope_differs_from_default_netw"), sensitive = false) {
             NetworkInterface.getNetworkInterfaces()?.let { Collections.list(it) }
         }
         val fields = mutableListOf<ProbeField<*>>()
@@ -20,7 +20,7 @@ class InterfaceProbe {
             fields += readField("$path.loopback", "NetworkInterface.isLoopback", sensitive = false) { face.isLoopback }
             fields += readField("$path.mtu", "NetworkInterface.getMTU", sensitive = false) { face.mtu }
             fields += readField("$path.addresses", "NetworkInterface.getInterfaceAddresses",
-                sensitive = true, note = "Java API 不暴露 LinkAddress flags / scope；不补造标志位") {
+                sensitive = true, note = DiagnosticCatalog.legacy("the_java_api_provides_addresses_linkaddress_flags_and_scope_remai")) {
                 face.interfaceAddresses.map { entry ->
                     AddressRecord(entry.address.hostAddress ?: "",
                         if (entry.address.address.size == 16) "IPv6" else "IPv4",

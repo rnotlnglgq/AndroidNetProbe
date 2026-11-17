@@ -98,12 +98,12 @@ class PublicEndpointProbe(private val transport: EndpointTransport) {
 
 fun externalFields(results: List<EndpointResult>): List<ProbeField<*>> {
     if (results.isEmpty()) return listOf(unavailable("externalChecks.state", "PublicEndpointProbe",
-        FieldStatus.not_requested, "INTERNET", "尚未由用户主动执行 HTTPS 实验", sensitive = false))
+        FieldStatus.not_requested, "INTERNET", DiagnosticCatalog.legacy("https_check_awaits_a_user_action"), sensitive = false))
     return results.flatMap { result ->
         val prefix = "externalChecks.${result.expectedFamily.lowercase()}"
         listOf(
             readField("$prefix.state", "PublicEndpointProbe", "INTERNET", sensitive = false) { result.state },
             readField("$prefix.result", "Network DNS / bound Socket / system TLS / ${result.provider} HTTPS endpoint", "INTERNET", true,
-                "绑定启动时的 App 默认 Network；不绑定进程。family 为公开 Socket 对端与服务端对照，VPN/NAT64 等仍可能转换底层协议。") { result })
+                DiagnosticCatalog.legacy("uses_the_app_default_network_captured_at_start_socket_peer_and_se")) { result })
     }
 }

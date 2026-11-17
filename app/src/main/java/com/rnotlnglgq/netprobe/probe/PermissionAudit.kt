@@ -21,7 +21,7 @@ class PermissionAudit(private val context: Context) {
                 }
             }
         } + listOf(readField("permissions.manifestDeclared", "PackageManager.requestedPermissions",
-            note = "包含依赖库合并的权限。AndroidX DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION 为应用自定义 signature 权限，不赋予设备数据访问能力", sensitive = false) {
+            note = DiagnosticCatalog.legacy("includes_merged_library_permissions_androidx_dynamic_receiver_not"), sensitive = false) {
             declared.sorted()
         }) + listOf(PackageManager.FEATURE_TELEPHONY, PackageManager.FEATURE_WIFI).map { feature ->
             readField("features.$feature", "PackageManager.hasSystemFeature", sensitive = false) {

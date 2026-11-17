@@ -1,5 +1,7 @@
 package com.rnotlnglgq.netprobe
 
+import com.rnotlnglgq.netprobe.R
+
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -15,6 +17,7 @@ import org.junit.Rule
 import org.junit.Test
 
 class SystemPropertiesUiTest {
+    private val strings get() = com.rnotlnglgq.netprobe.ui.AndroidUiStrings(androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext.resources)
     @get:Rule val compose = createComposeRule()
     @Test fun propertiesAreManualAndCarrierValuesRespectVisibility() {
         var doc by mutableStateOf(SystemPropertyProbe.notRequested())
@@ -29,9 +32,9 @@ class SystemPropertiesUiTest {
             }) {}
         } } }
         compose.runOnIdle { assertEquals(0, calls) }
-        compose.onNodeWithText("读取属性").performClick()
+        compose.onNodeWithText(strings.get(R.string.ui_read_properties)).performClick()
         compose.runOnIdle { assertEquals(1, calls) }
-        compose.onNodeWithText("运营商").performClick()
+        compose.onNodeWithText(strings.get(R.string.ui_carrier)).performClick()
         compose.onNodeWithText("gsm.operator.numeric").assertExists()
         compose.onNodeWithText("00101,,00102").assertDoesNotExist()
         compose.runOnIdle { reveal = true }

@@ -1,5 +1,7 @@
 package com.rnotlnglgq.netprobe
 
+import com.rnotlnglgq.netprobe.R
+
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.assertIsDisplayed
@@ -20,6 +22,7 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class ProbeInstrumentedTest {
+    private val strings get() = com.rnotlnglgq.netprobe.ui.AndroidUiStrings(androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext.resources)
     @get:Rule val compose = createAndroidComposeRule<MainActivity>()
 
     @Test fun realSnapshotHasCompleteMetadataWithoutRuntimeGrants() {
@@ -57,14 +60,14 @@ class ProbeInstrumentedTest {
     }
 
     @Test fun unconfiguredEndpointCannotSendRequests() {
-        compose.onNodeWithText("公网").performScrollTo().performClick()
-        compose.onNodeWithText("公网 / Cloudflare").performScrollTo().performClick()
-        compose.onNodeWithText("配置自有服务器").performClick()
-        compose.onNodeWithText("检测自有服务器…").assertIsNotEnabled()
+        compose.onNodeWithText(strings.get(R.string.ui_public_network)).performScrollTo().performClick()
+        compose.onNodeWithText(strings.get(R.string.ui_public_network_cloudflare)).performScrollTo().performClick()
+        compose.onNodeWithText(strings.get(R.string.ui_configure_your_server)).performClick()
+        compose.onNodeWithText(strings.get(R.string.ui_check_your_server)).assertIsNotEnabled()
     }
 
     @Test fun homeStartsWithoutDangerousPermission() {
         compose.onNodeWithText("NetProbe").assertIsDisplayed()
-        compose.onNodeWithText("刷新").assertIsDisplayed()
+        compose.onNodeWithText(strings.get(R.string.ui_refresh)).assertIsDisplayed()
     }
 }

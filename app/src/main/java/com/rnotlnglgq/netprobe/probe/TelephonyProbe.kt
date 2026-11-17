@@ -13,11 +13,11 @@ class TelephonyProbe(private val context: Context) {
             val feature = if (Build.VERSION.SDK_INT >= 33) {
                 if (subscription) PackageManager.FEATURE_TELEPHONY_SUBSCRIPTION else PackageManager.FEATURE_TELEPHONY_RADIO_ACCESS
             } else PackageManager.FEATURE_TELEPHONY
-            return if (Build.VERSION.SDK_INT < minApi) unavailable("telephony.$name", api, FieldStatus.unsupported_api, note = "需要 API $minApi", sensitive = false)
+            return if (Build.VERSION.SDK_INT < minApi) unavailable("telephony.$name", api, FieldStatus.unsupported_api, note = DiagnosticCatalog.legacy("requires_api_1_s" ,minApi), sensitive = false)
             else if (manager == null || !context.packageManager.hasSystemFeature(feature))
-                unavailable("telephony.$name", api, FieldStatus.unsupported_feature, note = "设备未声明 $feature", sensitive = false)
+                unavailable("telephony.$name", api, FieldStatus.unsupported_feature, note = DiagnosticCatalog.legacy("device_feature_missing_1_s" ,feature), sensitive = false)
             else readField("telephony.$name", api, sensitive = true,
-                note = "空值不代表没有 SIM；默认 TelephonyManager 的订阅选择由系统决定", block = block)
+                note = DiagnosticCatalog.legacy("an_empty_value_can_reflect_system_subscription_selection_or_sim_v"), block = block)
         }
         val fields = listOf(
             field("simOperatorName", "TelephonyManager.getSimOperatorName", true) { manager.simOperatorName },

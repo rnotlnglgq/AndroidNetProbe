@@ -1,5 +1,7 @@
 package com.rnotlnglgq.netprobe.ui
 
+import com.rnotlnglgq.netprobe.R
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
@@ -27,6 +29,7 @@ data class JsonPreview(val redacted: String, val raw: String) {
 
 @Composable
 fun JsonViewer(preview: JsonPreview, onDismiss: () -> Unit, onCopied: (String) -> Unit) {
+    val strings = rememberUiStrings()
     var copied by remember { mutableStateOf("") }
     var raw by remember { mutableStateOf(false) }
     val document = if (raw) preview.raw else preview.redacted
@@ -37,18 +40,18 @@ fun JsonViewer(preview: JsonPreview, onDismiss: () -> Unit, onCopied: (String) -
         Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
             Column(Modifier.safeDrawingPadding().imePadding().padding(16.dp)) {
                 Text("JSON", style = MaterialTheme.typography.titleLarge)
-                Text("当前快照 · 长按可选择文本", style = MaterialTheme.typography.bodySmall)
+                Text(strings.get(R.string.ui_current_snapshot_touch_and_hold_to_select_text), style = MaterialTheme.typography.bodySmall)
                 Row {
                     Checkbox(checked = raw, onCheckedChange = { raw = it })
-                    Text("包含完整地址和运营商信息", modifier = Modifier.padding(top = 12.dp))
+                    Text(strings.get(R.string.ui_include_full_addresses_and_carrier_information), modifier = Modifier.padding(top = 12.dp))
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Button(onClick = {
                         copyProbeText(context, "NetProbe JSON", document, raw)
-                        copied = if (raw) "已复制完整 JSON" else "已复制遮挡 JSON"
+                        copied = if (raw) strings.get(R.string.ui_full_json_copied) else strings.get(R.string.ui_redacted_json_copied)
                         onCopied(copied)
-                    }) { Text("复制全文") }
-                    OutlinedButton(onClick = onDismiss) { Text("关闭") }
+                    }) { Text(strings.get(R.string.ui_copy_all)) }
+                    OutlinedButton(onClick = onDismiss) { Text(strings.get(R.string.ui_close)) }
                 }
                 if (copied.isNotEmpty()) Text(copied)
                 BasicTextField(value = value, onValueChange = { value = it }, readOnly = true,

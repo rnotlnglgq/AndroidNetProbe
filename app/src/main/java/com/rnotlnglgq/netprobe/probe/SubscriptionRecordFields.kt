@@ -15,7 +15,7 @@ object PhoneAccess {
     const val PHONE = "READ_PHONE_STATE"
     const val SERVICE_STATE = "READ_PHONE_STATE + ACCESS_COARSE_LOCATION"
     fun serviceField(name: String): String = if (name in listOf("operatorNumeric", "operatorAlphaLong", "operatorAlphaShort"))
-        "ACCESS_COARSE_LOCATION or ACCESS_FINE_LOCATION (字段可见性)" else "none"
+        DiagnosticCatalog.legacy("access_coarse_location_or_access_fine_location_field_visibility") else "none"
     fun dataNetworkType(api: Int): String = if (api >= 33) "READ_PHONE_STATE or READ_BASIC_PHONE_STATE" else PHONE
 }
 
@@ -34,9 +34,9 @@ object SubscriptionRecordFields {
         listOf(readField("$prefix.sessionSubscriptionId", "session_random_uuid", sensitive = true) { alias }
             .withAcquisition(PhoneAccess.PHONE)) + specs.map { spec ->
             val field = if (api < spec.minApi) unavailable("$prefix.${spec.key}", "SubscriptionInfo.${spec.getter}",
-                FieldStatus.unsupported_api, note="需要 API ${spec.minApi}", sensitive=true)
+                FieldStatus.unsupported_api, note=DiagnosticCatalog.legacy("requires_api_1_s" ,spec.minApi), sensitive=true)
             else readField("$prefix.${spec.key}", "SubscriptionInfo.${spec.getter}", sensitive=true,
-                note=if (spec.key == "displayName") "名称可由用户修改，也可能保留系统默认值" else null) { read(spec.key) }
+                note=if (spec.key == "displayName") DiagnosticCatalog.legacy("name_may_be_user_edited_or_retain_its_system_default") else null) { read(spec.key) }
             field.withAcquisition(PhoneAccess.PHONE)
         }
 
